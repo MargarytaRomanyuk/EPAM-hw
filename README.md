@@ -1,2 +1,2 @@
-# EPAM-hw_centOS_Bash-
-Homework scripts on bash
+# EPAM-hw
+Homework scripts on bash and Python
