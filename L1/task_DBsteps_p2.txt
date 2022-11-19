@@ -1,0 +1,166 @@
+###########################PART 2#######################################
+
+####10.Make backup of your database.
+
+mysql> SHOW databases;
++--------------------+
+| Database           |
++--------------------+
+| home_accounting    |
+| information_schema |
+| mysql              |
+| performance_schema |
+| repair_cost        |
+| sys                |
++--------------------+
+$ mkdir ~/my_backups/
+$ mysqldump -u root -p repair_cost > ~/my_backups/repair_cost_bckp.sql
+$ ls ~/my_backups/
+repair_cost_bckp.sql
+
+
+######11.Delete the table and/or part of the data in the table.#########
+mysql> USE repair_cost;
+Database changed
+
+mysql> SHOW tables;
++-----------------------+
+| Tables_in_repair_cost |
++-----------------------+
+| decoration_materials  |
+| repair_services       |
+| technique             |
++-----------------------+
+
+mysql> DROP TABLE technique;
+mysql> SHOW tables;
++-----------------------+
+| Tables_in_repair_cost |
++-----------------------+
+| decoration_materials  |
+| repair_services       |
++-----------------------+
+
+mysql> SELECT * from repair_services;
++------+------------+----------------------+----------+------------+
+| n_id | date       | name                 | price    | contractor |
++------+------------+----------------------+----------+------------+
+|    1 | 2018-10-26 | plumbing instalation | 20000.00 | Alex       |
+|    3 | 2018-11-06 | electric instalation | 31000.00 | Alex       |
+|    5 | 2020-08-19 | doors instalation    | 42400.00 | Viktor     |
++------+------------+----------------------+----------+------------+
+
+mysql> DELETE FROM repair_services WHERE contractor='Alex';
+mysql> SELECT * from repair_services;
++------+------------+-------------------+----------+------------+
+| n_id | date       | name              | price    | contractor |
++------+------------+-------------------+----------+------------+
+|    5 | 2020-08-19 | doors instalation | 42400.00 | Viktor     |
++------+------------+-------------------+----------+------------+
+> exit
+#############12.Restore your database.#######################
+
+$ mysql -u root -p repair_cost < ~/my_backups/repair_cost_bckp.sql
+$ mysql -u root -p
+
+mysql> USE repair_cost;
+Database changed
+mysql> SHOW tables;
++-----------------------+
+| Tables_in_repair_cost |
++-----------------------+
+| decoration_materials  |
+| repair_services       |
+| technique             |
++-----------------------+
+
+mysql> SELECT * from repair_services;
++------+------------+----------------------+----------+------------+
+| n_id | date       | name                 | price    | contractor |
++------+------------+----------------------+----------+------------+
+|    1 | 2018-10-26 | plumbing instalation | 20000.00 | Alex       |
+|    3 | 2018-11-06 | electric instalation | 31000.00 | Alex       |
+|    5 | 2020-08-19 | doors instalation    | 42400.00 | Viktor     |
++------+------------+----------------------+----------+------------+
+
+########13.Transfer your local database to RDS AWS. ??????
+
+sudo vi /etc/mysql/mysql.conf.d/mysqld.cnf
+
+#add 
+[mysqld]
+log-bin=mysql-bin
+server-id=1 
+
+marharyta@marharyta-VirtualBox:~$ sudo service mysql restart
+marharyta@marharyta-VirtualBox:~$ sudo service mysql status
+● mysql.service - MySQL Community Server
+     Loaded: loaded (/lib/systemd/system/mysql.service; enabled; vendor preset>
+     Active: active (running) since Tue 2022-11-15 06:38:09 EET; 10s ago
+    Process: 7490 ExecStartPre=/usr/share/mysql/mysql-systemd-start pre (code=>
+   Main PID: 7498 (mysqld)
+     Status: "Server is operational"
+      Tasks: 39 (limit: 2288)
+     Memory: 403.1M
+        CPU: 1.345s
+     CGroup: /system.slice/mysql.service
+             └─7498 /usr/sbin/mysqld
+
+лис 15 06:38:07 marharyta-VirtualBox systemd[1]: Starting MySQL Community Serv>
+лис 15 06:38:09 marharyta-VirtualBox systemd[1]: Started MySQL Community Serve>
+lines 1-14/14 (END)
+
+mysqldump -u root \
+    --databases repair_cost \
+    --single-transaction \
+    -p12345678 | mysql -u marharyta \
+    --port=3306 \
+    --host=msql-epam-task.crljd2jlc9ed.eu-central-1.rds.amazonaws.com \
+     -paws12345678
+
+mysqldump -u root     --databases repair_cost     --single-transaction     --compress     --order-by-primary      -p12345678 | mysql -u marharyta    --host=msql-epam-task.crljd2jlc9ed.eu-central-1.rds.amazonaws.com         -paws12345678
+mysql: mysqldump: [Warning] Using a password on the command line interface can be insecure.
+[Warning] Using a password on the command line interface can be insecure.
+
+##########14.Connect to your database.
+
+$ mysql -h msql-epam-task.crljd2jlc9ed.eu-central-1.rds.amazonaws.com -u marharyta -p 
+Enter password: 
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 25
+Server version: 8.0.31 Source distribution
+
+mysql> show databases;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| msqltask           |
+| mysql              |
+| performance_schema |
+| repair_cost        |
+| sys                |
++--------------------+
+6 rows in set (0,08 sec)
+
+mysql> use msqltask;
+Database changed
+mysql> show tables;
+Empty set (0,07 sec)
+
+mysql -u marharyta -p -h msql-epam-task.crljd2jlc9ed.eu-central-1.rds.amazonaws.com -D msqltask < ~/my_backups/repair_cost_bckp.sql
+Enter password: 
+
+
+15.Execute SELECT operator similar step 6.
+16.Create the dump of your database.
+
+
+
+mysqldump -u root \
+    --databases repair_cost \
+    --single-transaction \
+    -p12345678 | mysql -u admin \
+    --port=3306 \
+    --host=mariadb.crljd2jlc9ed.eu-central-1.rds.amazonaws.com \
+     -paws12345678
