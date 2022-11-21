@@ -1,48 +1,130 @@
  ####################PART 3 – MongoDB#############################
+ 
+[marharita@centos7 ~]$ can't install mongodb
 
- sudo vi /etc/yum.repos.d/mongodb-org.repo
+#################
+setting for ubuntu 22.04
+$ wget -qO - https://www.mongodb.org/static/pgp/server-6.0.asc | sudo apt-key add -
+$ echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/6.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list
+$ sudo apt-get update
+$sudo apt-get install mongodb-org
+..............
+Adding new user `mongodb' (UID 128) with group `nogroup' ...
+Not creating home directory `/home/mongodb'.
+Adding group `mongodb' (GID 136) ...
+Done.
+Adding user `mongodb' to group `mongodb' ...
+......................
 
- [mongodb-org-6.0]
-name=MongoDB Repository
-baseurl=https://repo.mongodb.org/yum/redhat/$releasever/mongodb-org/6.0/x86_64/
-gpgcheck=1
-enabled=1
-gpgkey=https://www.mongodb.org/static/pgp/server-6.0.asc
+$ mongod --version
+db version v6.0.3
+Build Info: {
+    "version": "6.0.3",
+    "gitVersion": "f803681c3ae19817d31958965850193de067c516",
+    "openSSLVersion": "OpenSSL 3.0.2 15 Mar 2022",
+    "modules": [],
+    "allocator": "tcmalloc",
+    "environment": {
+        "distmod": "ubuntu2204",
+        "distarch": "x86_64",
+        "target_arch": "x86_64"
+    }
+}
 
-[marharita@centos ~]$ yum repolist
-........
-mongodb-org-6.0/7    MongoDB Repository                      55
+# with help
+https://www.cherryservers.com/blog/how-to-install-and-start-using-mongodb-on-ubuntu-20-04
+
+$ sudo systemctl start mongod
+$ sudo systemctl status mongod
+● mongod.service - MongoDB Database Server
+     Loaded: loaded (/lib/systemd/system/mongod.service; disabled; vendor pres>
+     Active: active (running) since Mon 2022-11-21 17:59:04 EET; 3s ago
+       Docs: https://docs.mongodb.org/manual
+   Main PID: 8393 (mongod)
+     Memory: 124.6M
+        CPU: 1.430s
+     CGroup: /system.slice/mongod.service
+             └─8393 /usr/bin/mongod --config /etc/mongod.conf
+
+$ mongod
+{"t":{"$date":"2022-11-21T18:08:54.943+02:00"},"s":"I",  "c":"NETWORK",  "id":4915701, "ctx":"main","msg":"Initialized wire specification","attr":{"spec":{"incomingExternalClient":{"minWireVersion":0,"maxWireVersion":17},"incomingInternalClient":{"minWireVersion":0,"maxWireVersion":17},"outgoing":{"minWireVersion":6,"maxWireVersion":17},"isInternalClient":true}}}.....................
+   ..................
+
+$ sudo ss -pnltu | grep 27017
+$ [sudo] password for marharyta: 
+tcp   LISTEN 0      4096       127.0.0.1:27017      0.0.0.0:*    users:(("mongod",pid=8393,fd=13)) 
+       
+##### to access MongoDB, run the following command:
+$ mongosh
+Current Mongosh Log ID:	637ba43b2480b34b76ab177f
+Connecting to:		mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.6.0
+Using MongoDB:		6.0.3
+Using Mongosh:		1.6.0
 ..........
 
-sudo yum --enablerepo=epel -y install inotify-tools
-  146  sudo yum install epel-release
-  147  sudo yum install inotify-tools
-  
-  chown -R root.root /home/marharita/repo
-  230  createrepo /home/marharita/repo
-  231  chmod -R o-w+r /home/marharita/repo
-  232  vi /etc/yum.repos.d/myrepo.repo
-yum clean all 
- 
-  272  yum update
-  273  yum --disablerepo=epel 
-  274  yum clean all
-  275  yum update
-  276  yum-config-manager --disable local
-  277  yum-config-manager --save --setopt=local.skip_if_unavailable=true
+test> 
 
-sudo vi /etc/yum.repos.d/CentOS-Base.repo
-[marharita@centos ~]$ 
+#############17. Create a database. Use the use command to connect to a new database (If it doesn't exist, Mongo will create it when you write to it).
+
+test> use repeir_cost
+switched to db repeir_cost
+repeir_cost> 
+
+### drop database
+repeir_cost> db.dropDatabase()
+{ ok: 1, dropped: 'repeir_cost' }
 
 
-#############17. Create a database. Use the use command to connect to a new database (If it
-doesn't exist, Mongo will create it when you write to it).
+############18. Create a collection. Use db.createCollection to create a collection. Run show dbs and show collections to view your database and collections.
 
-#############18. Create a collection. Use db.createCollection to create a collection. I'll leave the
-subject up to you. Run show dbs and show collections to view your database and
-collections.
+switched to db repair_cost
+repair_cost> show dbs;
+admin    40.00 KiB
+config  108.00 KiB
+local    40.00 KiB
 
-#############19. Create some documents. Insert a couple of documents into your collection. I'll
-leave the subject matter up to you, perhaps cars or hats.
+repair_cost> db.createCollection('decor')
+{ ok: 1 }
+repair_cost> show collections
+decor
+
+repair_cost> show dbs
+admin        40.00 KiB
+config       72.00 KiB
+local        40.00 KiB
+repair_cost   8.00 KiB
+
+#############19. Create some documents. Insert a couple of documents into your collection.
+
+repair_cost> db.decor.insertOne({name:"laminat", date:"2019-01-29", destination: ["living room", "bedroom", "hall"], price:"9520.00"})
+{
+  acknowledged: true,
+  insertedId: ObjectId("637bbeae3ff82d738dfa397a")
+
+repair_cost> db.decor.insertOne({name:"tile", date:"2019-01-09", destination: ["kitchen", "bathroom"], price:"5465.00"})
+
+repair_cost> db.decor.insertOne({name:"switchers", date:"2019-02-25", destination:["living room","bedroom","hall","kitchen","bathroom"],price:"11694.00"})
 
 #############20. Use find() to list documents out.
+
+repair_cost> db.decor.find({destination:"kitchen"})
+[
+  {
+    _id: ObjectId("637bbfdc3ff82d738dfa397b"),
+    name: 'tile',
+    date: '2019-01-09',
+    destination: [ 'kitchen', 'bathroom' ],
+    price: '5465.00'
+  },
+  {
+    _id: ObjectId("637bc1d83ff82d738dfa397c"),
+    name: 'switchers',
+    date: '2019-02-25',
+    destination: [ 'living room', 'bedroom', 'hall', 'kitchen', 'bathroom' ],
+    price: '11694.00'
+  }
+]
+
+
+
+
