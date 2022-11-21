@@ -1,0 +1,48 @@
+ ####################PART 3 – MongoDB#############################
+
+ sudo vi /etc/yum.repos.d/mongodb-org.repo
+
+ [mongodb-org-6.0]
+name=MongoDB Repository
+baseurl=https://repo.mongodb.org/yum/redhat/$releasever/mongodb-org/6.0/x86_64/
+gpgcheck=1
+enabled=1
+gpgkey=https://www.mongodb.org/static/pgp/server-6.0.asc
+
+[marharita@centos ~]$ yum repolist
+........
+mongodb-org-6.0/7    MongoDB Repository                      55
+..........
+
+sudo yum --enablerepo=epel -y install inotify-tools
+  146  sudo yum install epel-release
+  147  sudo yum install inotify-tools
+  
+  chown -R root.root /home/marharita/repo
+  230  createrepo /home/marharita/repo
+  231  chmod -R o-w+r /home/marharita/repo
+  232  vi /etc/yum.repos.d/myrepo.repo
+yum clean all 
+ 
+  272  yum update
+  273  yum --disablerepo=epel 
+  274  yum clean all
+  275  yum update
+  276  yum-config-manager --disable local
+  277  yum-config-manager --save --setopt=local.skip_if_unavailable=true
+
+sudo vi /etc/yum.repos.d/CentOS-Base.repo
+[marharita@centos ~]$ 
+
+
+#############17. Create a database. Use the use command to connect to a new database (If it
+doesn't exist, Mongo will create it when you write to it).
+
+#############18. Create a collection. Use db.createCollection to create a collection. I'll leave the
+subject up to you. Run show dbs and show collections to view your database and
+collections.
+
+#############19. Create some documents. Insert a couple of documents into your collection. I'll
+leave the subject matter up to you, perhaps cars or hats.
+
+#############20. Use find() to list documents out.

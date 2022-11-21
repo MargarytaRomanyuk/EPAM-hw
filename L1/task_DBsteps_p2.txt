@@ -83,8 +83,8 @@ mysql> SELECT * from repair_services;
 |    5 | 2020-08-19 | doors instalation    | 42400.00 | Viktor     |
 +------+------------+----------------------+----------+------------+
 
-########13.Transfer your local database to RDS AWS. ??????
-
+########13.Transfer your local database to RDS AWS. 
+#set local machine 
 sudo vi /etc/mysql/mysql.conf.d/mysqld.cnf
 
 #add 
@@ -92,25 +92,13 @@ sudo vi /etc/mysql/mysql.conf.d/mysqld.cnf
 log-bin=mysql-bin
 server-id=1 
 
+# restart service
 marharyta@marharyta-VirtualBox:~$ sudo service mysql restart
-marharyta@marharyta-VirtualBox:~$ sudo service mysql status
-● mysql.service - MySQL Community Server
-     Loaded: loaded (/lib/systemd/system/mysql.service; enabled; vendor preset>
-     Active: active (running) since Tue 2022-11-15 06:38:09 EET; 10s ago
-    Process: 7490 ExecStartPre=/usr/share/mysql/mysql-systemd-start pre (code=>
-   Main PID: 7498 (mysqld)
-     Status: "Server is operational"
-      Tasks: 39 (limit: 2288)
-     Memory: 403.1M
-        CPU: 1.345s
-     CGroup: /system.slice/mysql.service
-             └─7498 /usr/sbin/mysqld
 
-лис 15 06:38:07 marharyta-VirtualBox systemd[1]: Starting MySQL Community Serv>
-лис 15 06:38:09 marharyta-VirtualBox systemd[1]: Started MySQL Community Serve>
-lines 1-14/14 (END)
-
-mysqldump -u root \
+#set RDS instance 
+#add indoard ruls assosiated with local DB 
+#create database baskup and sent it to RDS instance
+$ mysqldump -u root \
     --databases repair_cost \
     --single-transaction \
     -p12345678 | mysql -u marharyta \
@@ -118,7 +106,7 @@ mysqldump -u root \
     --host=msql-epam-task.crljd2jlc9ed.eu-central-1.rds.amazonaws.com \
      -paws12345678
 
-mysqldump -u root     --databases repair_cost     --single-transaction     --compress     --order-by-primary      -p12345678 | mysql -u marharyta    --host=msql-epam-task.crljd2jlc9ed.eu-central-1.rds.amazonaws.com         -paws12345678
+$ mysqldump -u root     --databases repair_cost     --single-transaction     --compress     --order-by-primary      -p12345678 | mysql -u marharyta    --host=msql-epam-task.crljd2jlc9ed.eu-central-1.rds.amazonaws.com         -paws12345678
 mysql: mysqldump: [Warning] Using a password on the command line interface can be insecure.
 [Warning] Using a password on the command line interface can be insecure.
 
@@ -141,26 +129,175 @@ mysql> show databases;
 | repair_cost        |
 | sys                |
 +--------------------+
-6 rows in set (0,08 sec)
 
-mysql> use msqltask;
-Database changed
-mysql> show tables;
-Empty set (0,07 sec)
+################
+# after all privios steps same output in Centos7 VM
 
-mysql -u marharyta -p -h msql-epam-task.crljd2jlc9ed.eu-central-1.rds.amazonaws.com -D msqltask < ~/my_backups/repair_cost_bckp.sql
+[root@centos marharita]# mysql -h msql-epam-task.crljd2jlc9ed.eu-central-1.rds.amazonaws.com -P 3306 -u marharyta -p
 Enter password: 
+Welcome to the MariaDB monitor.  Commands end with ; or \g.
+Your MySQL connection id is 1170
+Server version: 8.0.31 Source distribution
+....
 
+MySQL [(none)]> show databases;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| msqltask           |
+| mysql              |
+| performance_schema |
+| repair_cost        |
+| sys                |
++--------------------+
+6 rows in set (0.07 sec)
 
-15.Execute SELECT operator similar step 6.
-16.Create the dump of your database.
+MySQL [(none)]> use msqltask
 
+Database changed
+MySQL [msqltask]> show tables;
++----------------------+
+| Tables_in_msqltask   |
++----------------------+
+| decoration_materials |
+| repair_services      |
+| technique            |
++----------------------+
+3 rows in set (0.07 sec)
 
+##########15.Execute SELECT operator similar step 6.
+MySQL [msqltask]> SELECT name FROM technique  WHERE end_guarantee='2024-03-29';
++------------+
+| name       |
++------------+
+| microware  |
+| dishwasher |
++------------+
+2 rows in set (0.17 sec)
+MySQL [msqltask]> SELECT name FROM technique  WHERE end_guarantee>=date;
++------------+
+| name       |
++------------+
+| oven       |
+| microware  |
+| dishwasher |
++------------+
+3 rows in set (0.09 sec)
+MySQL [msqltask]> SELECT name, MAX(price) FROM technique GROUP BY name;
++------------+------------+
+| name       | MAX(price) |
++------------+------------+
+| oven       |      11243 |
+| microware  |       6236 |
+| dishwasher |      15194 |
++------------+------------+
+3 rows in set (0.08 sec)
 
+MySQL [msqltask]> SELECT DISTINCT name FROM technique ORDER BY name;
++------------+
+| name       |
++------------+
+| dishwasher |
+| microware  |
+| oven       |
++------------+
+3 rows in set (0.18 sec)
+
+###############16.Create the dump of your database.
 mysqldump -u root \
     --databases repair_cost \
     --single-transaction \
+    -p12345678 | mysql -u marharyta \
+    --port=3306 \
+    --host=msql-epam-task.crljd2jlc9ed.eu-central-1.rds.amazonaws.com \
+     -paws12345678
+     
+     
+     
+############ Exemple on MariaDB instance 
+     
+[root@centos marharita]# mysql -h epam-task-mariadb.crljd2jlc9ed.eu-central-1.rds.amazonaws.com -P 3306 -u admin -p
+Enter password: 
+Welcome to the MariaDB monitor.  Commands end with ; or \g.
+Your MariaDB connection id is 183
+Server version: 10.6.10-MariaDB managed by https://aws.amazon.com/rds/
+
+Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+MariaDB [(none)]> show databases;
++--------------------+
+| Database           |
++--------------------+
+| epam_task          |
+| information_schema |
+| innodb             |
+| mysql              |
+| performance_schema |
+| sys                |
++--------------------+
+6 rows in set (0.09 sec)
+
+MariaDB [(none)]> 
+
+MariaDB [(none)]> use epam_task;
+Database changed
+MariaDB [epam_task]> show tables;
+Empty set (0.08 sec)
+mysqldump -u root \
+    --databases home_accounting \
+    --single-transaction \
     -p12345678 | mysql -u admin \
     --port=3306 \
-    --host=mariadb.crljd2jlc9ed.eu-central-1.rds.amazonaws.com \
+    --host=epam-task-mariadb.crljd2jlc9ed.eu-central-1.rds.amazonaws.com \
      -paws12345678
+
+MariaDB [epam_task]> exit
+Bye
+[root@centos marharita]# mysqldump -u root \
+>     --databases home_accounting \
+>     --single-transaction \
+>     -p12345678 | mysql -u admin \
+>     --port=3306 \
+>     --host=epam-task-mariadb.crljd2jlc9ed.eu-central-1.rds.amazonaws.com \
+>      -paws12345678
+[root@centos marharita]# mysql -h epam-task-mariadb.crljd2jlc9ed.eu-central-1.rds.amazonaws.com -P 3306 -u admin -p
+Enter password: 
+Welcome to the MariaDB monitor.  Commands end with ; or \g.
+Your MariaDB connection id is 192
+Server version: 10.6.10-MariaDB managed by https://aws.amazon.com/rds/
+.....
+MariaDB [(none)]> show databases;
++--------------------+
+| Database           |
++--------------------+
+| epam_task          |
+| home_accounting    |
+| information_schema |
+| innodb             |
+| mysql              |
+| performance_schema |
+| sys                |
++--------------------+
+7 rows in set (0.07 sec)
+
+MariaDB [(none)]> use epam_task;
+Database changed
+MariaDB [epam_task]> show tables;
+Empty set (0.09 sec)
+
+> use home_accounting;
+Reading table information for completion of table and column names
+You can turn off this feature to get a quicker startup with -A
+Database changed
+MariaDB [home_accounting]> show tables;
++---------------------------+
+| Tables_in_home_accounting |
++---------------------------+
+| expenses                  |
+| income                    |
++---------------------------+
+2 rows in set (0.06 sec)
+    
