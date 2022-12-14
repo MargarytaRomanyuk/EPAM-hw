@@ -1,0 +1,278 @@
+rita@client-1:~$ hostname
+client-1
+rita@client-1:~$ sudo hostname server-1
+[sudo] password for rita: 
+rita@client-1:~$ hostname
+server-1
+rita@client-1:~$ sudo vi /etc/hostname
+rita@client-1:~$ sudo nano /etc/hostname
+
+# 1.Configure static addresses on all interfaces on Server_1
+############# setting server-1 #####################
+
+$ sudo nano /etc/netplan/01-network-manager-all.yaml
+
+#Let NetworkManager manage all devices on this system
+network:
+  version: 2
+  renderer: NetworkManager
+  ethernets:
+    enp0s3:
+      addresses: [192.168.0.101/24]
+      routes:
+        - to: default
+          via: 192.168.0.1
+      nameservers:
+        addresses: [8.8.8.8, 8.8.8.4]
+      dhcp4: no
+    enp0s8:
+      addresses: [10.89.28.20/24]
+      nameservers:
+        addresses: [192.168.0.1]
+      dhcp4: no
+    enp0s9:
+      addresses: [10.2.89.10/24]
+      nameservers:
+        addresses: [192.168.0.1]
+      dhcp4: no
+
+$ sudo netplan try
+$ sudo netplan apply
+
+# 2. Configure the DHCP service on Server_1, wich will configure the int1 addresses of Client_1 and Client_2
+############# DHCP configuretion ###################
+##server-1 forwarding
+~$ sudo nano /etc/sysctl.conf
+#uncomment 
+net.ipv4.ip_forward=1
+
+rita@server-1:~$ sudo nano /etc/default/isc-dhcp-server
+
+# On what interfaces should the DHCP server (dhcpd) serve DHCP requests?
+#       Separate multiple interfaces with spaces, e.g. "eth0 eth1".
+INTERFACESv4="enp0s8 enp0s9"
+INTERFACESv6="enp0s8 enp0s9"
+
+rita@server-1:~$ sudo nano /etc/dhcp/dhcpd.conf
+# A slightly different configuration for an internal subnet
+###############     client-1 Ubuntu       #################
+
+subnet 10.89.28.0 netmask 255.255.255.0 {
+  range 10.89.28.5 10.89.28.30;
+  option domain-name-servers internal2.myserv1.ubu;
+  option domain-name "myserv1.ubu";
+  option subnet-mask 255.255.255.0;
+  option routers 10.89.28.20;
+  option broadcast-address 10.89.28.255;
+  default-lease-time 720;
+  max-lease-time 7200;
+}
+
+###############     client-2 Centos7       #################
+
+subnet 10.2.89.0 netmask 255.255.255.0 {
+  range 10.2.89.5 10.2.89.30;
+  option domain-name-servers internal2.myserv1.ubu;
+  option domain-name "myserv1.ubu";
+  option subnet-mask 255.255.255.0;
+  option routers 10.2.89.10;
+  option broadcast-address 10.2.89.255;
+  default-lease-time 720;
+  max-lease-time 7200;
+}
+ 
+rita@server-1:~$ sudo service isc-dhcp-server status
+rita@server-1:~$ sudo service isc-dhcp-server restart
+
+##### DHCP server verification  
+
+rita@server-1:~$ dhcp-lease-list
+To get manufacturer names please download http://standards.ieee.org/regauth/oui/oui.txt to /usr/local/etc/oui.txt
+Reading leases from /var/lib/dhcp/dhcpd.leases
+MAC                IP              hostname       valid until         manufacturer        
+===============================================================================================
+08:00:27:76:20:6c  10.2.89.5       client-2       2022-12-06 04:00:12 -NA-                
+08:00:27:7d:79:33  10.89.28.5      client-1       2022-12-06 03:51:40 -NA- 
+
+#### 3 ping, traceroute
+ping 172.16.28.20 
+ping 10.89.28.20 
+ping 10.89.28.10
+
+
+### !X means "communication administratively prohibited"
+ 
+rita@server-1:~$ traceroute 172.16.28.10
+traceroute to 172.16.28.10 (172.16.28.10), 30 hops max, 60 byte packets
+ 1  172.16.28.10 (172.16.28.10)  0.795 ms  0.753 ms  0.732 ms
+rita@server-1:~$ traceroute 172.16.28.20
+traceroute to 172.16.28.20 (172.16.28.20), 30 hops max, 60 byte packets
+ 1  10.89.28.6 (10.89.28.6)  1.888 ms  1.776 ms  1.717 ms
+ 2  172.16.28.20 (172.16.28.20)  1.406 ms !X  1.258 ms !X  1.221 ms !X
+rita@server-1:~$ traceroute 172.16.28.20
+rita@server-1:~$ traceroute 10.2.89.5
+traceroute to 10.2.89.5 (10.2.89.5), 30 hops max, 60 byte packets
+ 1  10.2.89.5 (10.2.89.5)  46.271 ms !X  46.287 ms !X  46.177 ms !X
+rita@server-1:~$ traceroute 172.16.28.20
+traceroute to 172.16.28.20 (172.16.28.20), 30 hops max, 60 byte packets
+ 1  10.89.28.6 (10.89.28.6)  0.716 ms  0.679 ms  0.663 ms
+ 2  172.16.28.20 (172.16.28.20)  2.910 ms !X  2.879 ms !X  3.148 ms !X
+rita@server-1:~$ traceroute 172.16.28.10
+traceroute to 172.16.28.10 (172.16.28.10), 30 hops max, 60 byte packets
+ 1  172.16.28.10 (172.16.28.10)  0.932 ms  0.894 ms  0.867 ms
+rita@server-1:~$ traceroute 10.89.28.6
+traceroute to 10.89.28.6 (10.89.28.6), 30 hops max, 60 byte packets
+ 1  10.89.28.6 (10.89.28.6)  2.242 ms  0.513 ms  0.381 ms
+rita@server-1:~$ traceroute 10.89.28.20
+traceroute to 10.89.28.20 (10.89.28.20), 30 hops max, 60 byte packets
+ 1  server-1 (10.89.28.20)  0.492 ms  0.453 ms  0.437 ms
+rita@server-1:~$ traceroute 192.168.0.104
+traceroute to 192.168.0.104 (192.168.0.104), 30 hops max, 60 byte packets
+ 1  server-1 (192.168.0.104)  0.388 ms  0.331 ms  0.314 ms
+rita@server-1:~$ traceroute 192.168.0.1
+traceroute to 192.168.0.1 (192.168.0.1), 30 hops max, 60 byte packets
+ 1  _gateway (192.168.0.1)  4.804 ms  5.500 ms  5.477 ms
+rita@server-1:~$ traceroute 8.8.8.8
+traceroute to 8.8.8.8 (8.8.8.8), 30 hops max, 60 byte packets
+ 1  _gateway (192.168.0.1)  6.174 ms  6.117 ms  6.095 ms
+ 2  10.2.13.1 (10.2.13.1)  8.067 ms  9.359 ms  8.765 ms
+ 3  178.158.194.161 (178.158.194.161)  10.254 ms  9.832 ms  9.793 ms
+ 4  10.255.253.15 (10.255.253.15)  10.558 ms  10.536 ms  11.744 ms
+ 5  10.255.249.1 (10.255.249.1)  10.367 ms  11.026 ms  11.004 ms
+ 6  google.1-ix.net (185.1.213.44)  18.336 ms google-gw.ix.net.ua (185.1.50.166)  5.912 ms dtel-ix-3.google.com (193.25.181.70)  7.072 ms
+ 7  108.170.248.138 (108.170.248.138)  6.398 ms 108.170.248.155 (108.170.248.155)  5.783 ms 108.170.248.138 (108.170.248.138)  9.330 ms
+ 8  72.14.239.111 (72.14.239.111)  10.309 ms 142.251.242.39 (142.251.242.39)  22.939 ms  23.892 ms
+ 9  142.250.46.55 (142.250.46.55)  24.879 ms 108.170.250.209 (108.170.250.209)  25.797 ms 142.251.77.181 (142.251.77.181)  24.828 ms
+10  172.253.65.37 (172.253.65.37)  24.811 ms 216.239.40.43 (216.239.40.43)  27.573 ms 74.125.242.225 (74.125.242.225)  27.714 ms
+11  142.251.228.27 (142.251.228.27)  25.685 ms 142.250.238.1 (142.250.238.1)  27.683 ms 108.170.234.101 (108.170.234.101)  19.074 ms
+12  dns.google (8.8.8.8)  18.990 ms  17.984 ms  20.937 ms
+
+
+rita@server-1:~$ ip neigh
+192.168.0.1 dev enp0s3 lladdr c8:3a:35:7a:fe:48 REACHABLE
+172.16.28.10 dev enp0s8 lladdr 08:00:27:7d:79:33 STALE
+10.89.28.5 dev enp0s8 lladdr 08:00:27:7d:79:33 STALE
+
+###### 4. loopback net on client-1
+### routing
+
+rita@server-1:~$ sudo ip route add 172.17.38.0/24 via 10.89.28.5
+rita@server-1:~$ ping 172.17.38.1
+PING 172.17.38.1 (172.17.38.1) 56(84) bytes of data.
+64 bytes from 172.17.38.1: icmp_seq=1 ttl=64 time=0.377 ms
+^C
+
+####### 5. Summarizing 
+rita@server-1:~$ sudo ip route del 172.17.38.0/24 via 10.89.28.5
+rita@server-1:~$ sudo ip route add 172.17.32.0/19 via 10.89.28.5
+rita@server-1:~$ ping 172.17.38.1
+PING 172.17.38.1 (172.17.38.1) 56(84) bytes of data.
+64 bytes from 172.17.38.1: icmp_seq=1 ttl=64 time=0.532 ms
+64 bytes from 172.17.38.1: icmp_seq=2 ttl=64 time=1.57 ms
+
+rita@server-1:~$ ping 172.17.48.1
+PING 172.17.48.1 (172.17.48.1) 56(84) bytes of data.
+64 bytes from 172.17.48.1: icmp_seq=1 ttl=64 time=0.467 ms
+
+##### 6. SSH
+$ sudo apt-get install openssh-server
+$ sudo systemctl status ssh
+  rita@server-1:~$ sudo systemctl status ssh
+[sudo] password for rita: 
+● ssh.service - OpenBSD Secure Shell server
+     Loaded: loaded (/lib/systemd/system/ssh.service; enabled; vendor preset: >
+     Active: active (running) since Sat 2022-12-10 08:54:11 EET; 2min 27s ago
+       Docs: man:sshd(8)
+             man:sshd_config(5)
+    Process: 707 ExecStartPre=/usr/sbin/sshd -t (code=exited, status=0/SUCCESS)
+   Main PID: 742 (sshd)
+      Tasks: 1 (limit: 2283)
+     Memory: 3.6M
+        CPU: 51ms
+     CGroup: /system.slice/ssh.service
+             └─742 "sshd: /usr/sbin/sshd -D [listener] 0 of 10-100 startups"
+
+$ sudo systemctl restart ssh
+
+######## 7. Firewall
+rita@server-1:~$ sudo iptables -L
+[sudo] password for rita: 
+Chain INPUT (policy ACCEPT)
+target     prot opt source               destination         
+
+Chain FORWARD (policy ACCEPT)
+target     prot opt source               destination         
+
+Chain OUTPUT (policy ACCEPT)
+target     prot opt source               destination  
+
+$ sudo iptables -A FORWARD -p icmp -d 172.17.48.1 -j DROP
+$ sudo iptables -A FORWARD -p tcp -d 10.2.89.0/255.255.255.0 --dport ssh -j DROP
+
+
+rita@server-1:~$ sudo iptables -L
+Chain INPUT (policy ACCEPT)
+target     prot opt source               destination         
+
+Chain FORWARD (policy ACCEPT)
+target     prot opt source               destination         
+DROP       tcp  --  anywhere             10.2.89.0/24         tcp dpt:ssh
+DROP       icmp --  anywhere             172.17.48.1         
+
+Chain OUTPUT (policy ACCEPT)
+target     prot opt source               destination     
+
+### to delete rule use key -D (or -F ,--flush deleting all rules)
+
+rita@server-1:~$ sudo iptables -D FORWARD -p tcp -d 10.2.89.0/255.255.255.0 --dport ssh -j DROP
+
+rita@server-1:~$ sudo iptables -F
+rita@server-1:~$ sudo iptables -L
+Chain INPUT (policy ACCEPT)
+target     prot opt source               destination         
+
+Chain FORWARD (policy ACCEPT)
+target     prot opt source               destination         
+
+Chain OUTPUT (policy ACCEPT)
+target     prot opt source               destination         
+rita@server-1:~$ 
+
+######## NAT 
+ 
+rita@server-1:~$ sudo iptables -t nat -L
+[sudo] password for rita: 
+Chain PREROUTING (policy ACCEPT)
+target     prot opt source               destination         
+
+Chain INPUT (policy ACCEPT)
+target     prot opt source               destination         
+
+Chain OUTPUT (policy ACCEPT)
+target     prot opt source               destination         
+
+Chain POSTROUTING (policy ACCEPT)
+target     prot opt source               destination         
+rita@server-1:~$ 
+
+rita@server-1:~$ sudo iptables -t nat -D POSTROUTING 1
+rita@server-1:~$ sudo iptables -t nat -L
+Chain PREROUTING (policy ACCEPT)
+target     prot opt source               destination         
+
+Chain INPUT (policy ACCEPT)
+target     prot opt source               destination         
+
+Chain OUTPUT (policy ACCEPT)
+target     prot opt source               destination         
+
+Chain POSTROUTING (policy ACCEPT)
+target     prot opt source               destination         
+MASQUERADE  all  --  anywhere             anywhere            
+rita@server-1:~$ 
+
+
+####see result in client-1.txt, client-2.txt
+   
+
+

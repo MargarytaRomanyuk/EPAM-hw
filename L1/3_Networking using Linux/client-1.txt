@@ -1,0 +1,143 @@
+############# 1. setting client-1 #####################
+$ sudo nano /etc/netplan/01-network-manager-all.yaml
+# Let NetworkManager manage all devices on this system
+network:
+  version: 2
+  renderer: NetworkManager
+  ethernets:
+    enp0s3:
+      addresses: [10.89.28.10/24]
+      dhcp4: no
+    enp0s8:
+      addresses: [172.16.28.10/24]
+      dhcp4: no
+
+$ sudo netplan try
+$ sudo netplan apply
+
+
+################# DHCP client-1   ######################   
+################# Routing configure ####################
+$ sudo nano /etc/netplan/01-network-manager-all.yaml
+network:
+  version: 2
+  renderer: NetworkManager
+  ethernets:
+    enp0s3:
+      routes:
+        - to: 192.168.0.0/24
+          via: 10.89.28.20
+        - to: 10.2.89.0/24
+          via: 10.89.28.20
+          metric: 100
+      nameservers:
+        addresses: [8.8.8.8, 192.168.0.1]
+      dhcp4: yes
+    enp0s8:
+      addresses: [172.16.28.10/24]
+      dhcp4: no
+      routes:
+        - to: 10.2.89.0/24
+          via: 172.16.28.20
+          metric: 10
+      
+############ 3. ping & traceroute ####################
+    
+rita@client-1:~$ ping 10.89.28.20
+PING 10.89.28.20 (10.89.28.20) 56(84) bytes of data.
+64 bytes from 10.89.28.20: icmp_seq=1 ttl=64 time=0.479 ms
+
+rita@client-1:~$ ping 8.8.8.8
+PING 8.8.8.8 (8.8.8.8) 56(84) bytes of data.
+64 bytes from 8.8.8.8: icmp_seq=1 ttl=116 time=22.7 ms
+
+rita@client-1:~$ ping google.com
+PING google.com (142.250.186.206) 56(84) bytes of data.
+64 bytes from waw07s05-in-f14.1e100.net (142.250.186.206): icmp_seq=1 ttl=116 time=21.3 ms
+
+$ sudo apt install inetutils-traceroute
+
+########### 4. loopback ###################################
+
+rita@client-1:~$ ip addr sh lo
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+       
+rita@client-1:~$ sudo ip addr add 172.17.38.1/24 dev  lo
+rita@client-1:~$ sudo ip addr add 172.17.48.1/24 dev  lo
+rita@client-1:~$ ip addr sh lo
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet 172.17.38.1/24 scope global lo
+       valid_lft forever preferred_lft forever
+    inet 172.17.48.1/24 scope global lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+
+rita@client-1:~$ ping 172.17.38.1
+PING 172.17.38.1 (172.17.38.1) 56(84) bytes of data.
+64 bytes from 172.17.38.1: icmp_seq=1 ttl=64 time=0.032 ms
+64 bytes from 172.17.38.1: icmp_seq=2 ttl=64 time=0.083 ms
+
+rita@client-1:~$ ping 172.17.48.1
+PING 172.17.48.1 (172.17.48.1) 56(84) bytes of data.
+64 bytes from 172.17.48.1: icmp_seq=1 ttl=64 time=0.035 ms
+
+$ sudo ip route add 10.89.28.0/24 via 10.89.28.5
+
+rita@client-1:~$ ip route
+default via 10.89.28.20 dev enp0s3 proto dhcp metric 20100 
+10.2.89.0/24 via 10.89.28.20 dev enp0s3 proto static metric 100 
+10.2.89.0/24 via 172.16.28.20 dev enp0s8 proto static metric 101 
+10.89.28.0/24 via 10.89.28.5 dev enp0s3 
+10.89.28.0/24 dev enp0s3 proto kernel scope link src 10.89.28.5 metric 100 
+10.89.28.20 dev enp0s3 proto static scope link metric 100 
+169.254.0.0/16 dev enp0s8 scope link metric 1000 
+172.16.28.0/24 dev enp0s8 proto kernel scope link src 172.16.28.10 metric 101 
+192.168.0.0/24 via 10.89.28.20 dev enp0s3 proto static metric 100
+
+
+################# 5. Summarizing see client-2.txt ##############################
+### 6. SSH Same client-2.txt 
+#### 7. Firewall see client-2.txt 
+##### 8. NAT
+#after NAT setting
+rita@client-1:~$ ping 8.8.8.8
+PING 8.8.8.8 (8.8.8.8) 56(84) bytes of data.
+64 bytes from 8.8.8.8: icmp_seq=1 ttl=116 time=19.5 ms
+64 bytes from 8.8.8.8: icmp_seq=2 ttl=116 time=18.9 ms
+64 bytes from 8.8.8.8: icmp_seq=3 ttl=116 time=22.0 ms
+^C
+--- 8.8.8.8 ping statistics ---
+3 packets transmitted, 3 received, 0% packet loss, time 2127ms
+rtt min/avg/max/mdev = 18.901/20.145/21.993/1.332 ms
+rita@client-1:~$ ping google.com
+PING google.com (142.250.186.206) 56(84) bytes of data.
+64 bytes from waw07s05-in-f14.1e100.net (142.250.186.206): icmp_seq=1 ttl=116 time=17.2 ms
+64 bytes from waw07s05-in-f14.1e100.net (142.250.186.206): icmp_seq=2 ttl=116 time=18.2 ms
+^C
+--- google.com ping statistics ---
+3 packets transmitted, 2 received, 33.3333% packet loss, time 2004ms
+rtt min/avg/max/mdev = 17.229/17.705/18.181/0.476 ms
+rita@client-1:~$ ping 192.168.0.1
+PING 192.168.0.1 (192.168.0.1) 56(84) bytes of data.
+64 bytes from 192.168.0.1: icmp_seq=1 ttl=63 time=1.98 ms
+64 bytes from 192.168.0.1: icmp_seq=2 ttl=63 time=1.96 ms
+64 bytes from 192.168.0.1: icmp_seq=3 ttl=63 time=2.24 ms
+^C
+--- 192.168.0.1 ping statistics ---
+3 packets transmitted, 3 received, 0% packet loss, time 2009ms
+rtt min/avg/max/mdev = 1.964/2.061/2.236/0.123 ms
+
+
+
+
+
+

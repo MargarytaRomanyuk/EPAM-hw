@@ -1,0 +1,522 @@
+#### 1. create interfaces and add IP addr configuration 
+
+$ sudo vi /etc/sysconfig/network-scripts/ifcfg-enp0s3
+
+TYPE="Ethernet"
+PROXY_METHOD="none"
+BROWSER_ONLY="no"
+BOOTPROTO="none"
+DEFROUTE="yes"
+IPV4_FAILURE_FATAL="no"
+IPV6INIT="yes"
+IPV6_AUTOCONF="yes"
+IPV6_DEFROUTE="yes"
+IPV6_FAILURE_FATAL="no"
+IPV6_ADDR_GEN_MODE="stable-privacy"
+NAME="enp0s3"
+UUID="f4da4cf1-d3e7-4266-b701-927fa6ca63d9"
+DEVICE="enp0s3"
+ONBOOT="yes"
+IPV6_PRIVACY="no"
+
+IPADDR0="10.2.89.20"
+PREFIX0="24"
+GATEWAY0="10.2.89.10"
+DNS1="8.8.8.8"
+
+$ nmcli con add ifname enp0s8 type ethernet 
+$ sudo vi /etc/sysconfig/network-scripts/ifcfg-enp0s8
+TYPE=Ethernet
+PROXY_METHOD=none
+BROWSER_ONLY=no
+BOOTPROTO=none
+DEFROUTE=yes
+IPV4_FAILURE_FATAL=no
+IPV6INIT=yes
+IPV6_AUTOCONF=yes
+IPV6_DEFROUTE=yes
+IPV6_FAILURE_FATAL=no
+IPV6_ADDR_GEN_MODE=stable-privacy
+NAME=enp0s8
+UUID=cfd7526c-4c42-4097-9545-f47b5e212050
+DEVICE=enp0s8
+ONBOOT=yes
+
+IPADDR0=172.16.28.20
+PREFIX0=24
+GATEWAY0=172.16.28.10
+DNS1="8.8.8.8"
+~   
+sudo systemctl restart networking
+
+[marharita@client-2 ~]$ ifconfig
+enp0s3: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 10.2.89.20  netmask 255.255.255.0  broadcast 10.2.89.255
+        inet6 fe80::a00:27ff:fe76:206c  prefixlen 64  scopeid 0x20<link>
+        ether 08:00:27:76:20:6c  txqueuelen 1000  (Ethernet)
+        RX packets 282  bytes 92496 (90.3 KiB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 37  bytes 2648 (2.5 KiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+enp0s8: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 172.16.28.20  netmask 255.255.255.0  broadcast 172.16.28.255
+        inet6 fe80::a00:27ff:feed:ee4  prefixlen 64  scopeid 0x20<link>
+        ether 08:00:27:ed:0e:e4  txqueuelen 1000  (Ethernet)
+        RX packets 0  bytes 0 (0.0 B)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 676  bytes 113028 (110.3 KiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+[marharita@client-2 ~]$ nmcli con sh
+NAME    UUID                                  TYPE      DEVICE 
+enp0s3  f4da4cf1-d3e7-4266-b701-927fa6ca63d9  ethernet  enp0s3 
+enp0s8  5804d670-ade6-44f1-9fd9-007cabfd4404  ethernet  enp0s8 
+[marharita@client-2 ~]$ 
+
+############### 2.1 DHCP configuration client-2  (int1) ##############
+sudo vi /etc/sysconfig/network-scripts/ifcfg-enp0s3 
+TYPE="Ethernet"
+PROXY_METHOD="none"
+BROWSER_ONLY="no"
+BOOTPROTO="dhcp"
+DEFROUTE="yes"
+IPV4_FAILURE_FATAL="no"
+IPV6INIT="yes"
+IPV6_AUTOCONF="yes"
+IPV6_DEFROUTE="yes"
+IPV6_FAILURE_FATAL="no"
+IPV6_ADDR_GEN_MODE="stable-privacy"
+NAME="enp0s3"
+UUID="f4da4cf1-d3e7-4266-b701-927fa6ca63d9"
+DEVICE="enp0s3"
+ONBOOT="yes"
+IPV6_PRIVACY="no"
+
+#IPADDR0="10.2.89.20"
+#PREFIX0="24"
+GATEWAY0="10.2.89.10"
+DNS1="8.8.8.8"
+DNS0="192.168.0.103"
+
+sudo systemctl restart networking
+
+[marharita@client-2 ~]$ ifconfig
+enp0s3: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 10.2.89.5  netmask 255.255.255.0  broadcast 10.2.89.255
+        inet6 fe80::a00:27ff:fe76:206c  prefixlen 64  scopeid 0x20<link>
+        ether 08:00:27:76:20:6c  txqueuelen 1000  (Ethernet)
+        RX packets 26  bytes 5418 (5.2 KiB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 37  bytes 6142 (5.9 KiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+enp0s8: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 172.16.28.20  netmask 255.255.255.0  broadcast 172.16.28.255
+        inet6 fe80::a00:27ff:feed:ee4  prefixlen 64  scopeid 0x20<link>
+        ether 08:00:27:ed:0e:e4  txqueuelen 1000  (Ethernet)
+        RX packets 0  bytes 0 (0.0 B)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 14  bytes 1016 (1016.0 B)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+##### 2.2 routing
+[marharita@client-2 ~]$ cd /etc/sysconfig/network-scripts
+[marharita@client-2 network-scripts]$ sudo vi route-enp0s3
+[marharita@client-2 network-scripts]$ sudo vi route-enp0s8
+
+[marharita@client-2 ~]$ sudo cat /etc/sysconfig/network-scripts/route-enp0s3
+ADDRESS0=10.2.89.0
+NETMASK0=255.255.255.0
+GATEWAY0=10.2.89.5
+
+ADDRESS1=10.89.28.0
+NETMASK1=255.255.255.0
+GATEWAY1=10.2.89.10
+
+ADDRESS2=192.168.0.0
+NETMASK2=255.255.255.0
+GATEWAY2=10.2.89.10
+
+[marharita@client-2 ~]$ sudo cat /etc/sysconfig/network-scripts/route-enp0s8
+ADDRESS0=172.16.28.0
+NETMASK0=255.255.255.0
+GATEWAY0=172.16.28.20
+
+ADDRESS1=10.89.28.0
+NETMASK1=255.255.255.0
+GATEWAY1=172.16.28.10
+
+[[marharita@client-2 ~]$ route -n
+Kernel IP routing table
+Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
+0.0.0.0         10.2.89.10      0.0.0.0         UG    0      0        0 enp0s3
+10.2.89.0       0.0.0.0         255.255.255.0   U     0      0        0 enp0s3
+10.89.28.0      172.16.28.10    255.255.255.0   UG    0      0        0 enp0s8
+169.254.0.0     0.0.0.0         255.255.0.0     U     1002   0        0 enp0s3
+169.254.0.0     0.0.0.0         255.255.0.0     U     1003   0        0 enp0s8
+172.16.28.0     0.0.0.0         255.255.255.0   U     0      0        0 enp0s8
+[marharita@client-2 ~]$ route -v
+Kernel IP routing table
+Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
+default         gateway         0.0.0.0         UG    0      0        0 enp0s3
+10.2.89.0       0.0.0.0         255.255.255.0   U     0      0        0 enp0s3
+10.89.28.0      172.16.28.10    255.255.255.0   UG    0      0        0 enp0s8
+link-local      0.0.0.0         255.255.0.0     U     1002   0        0 enp0s3
+link-local      0.0.0.0         255.255.0.0     U     1003   0        0 enp0s8
+172.16.28.0     0.0.0.0         255.255.255.0   U     0      0        0 enp0s8
+
+
+#### 3. ping & traceroute 
+#####check internal network connection
+[marharita@client-2 ~]$ ping 10.2.89.10
+PING 10.2.89.10 (10.2.89.10) 56(84) bytes of data.
+64 bytes from 10.2.89.10: icmp_seq=1 ttl=64 time=0.430 ms
+64 bytes from 10.2.89.10: icmp_seq=2 ttl=64 time=1.80 ms
+[marharita@client-2 ~]$ ping 10.89.28.5
+PING 10.89.28.5 (10.89.28.5) 56(84) bytes of data.
+64 bytes from 10.89.28.5: icmp_seq=1 ttl=64 time=0.409 ms
+64 bytes from 10.89.28.5: icmp_seq=2 ttl=64 time=1.32 ms
+
+[marharita@client-2 ~]$ ping 172.16.28.10
+PING 172.16.28.10 (172.16.28.10) 56(84) bytes of data.
+64 bytes from 172.16.28.10: icmp_seq=1 ttl=64 time=0.473 ms
+
+######## traceroute
+
+[marharita@client-2 ~]$ traceroute 172.16.28.20
+traceroute to 172.16.28.20 (172.16.28.20), 30 hops max, 60 byte packets
+ 1  client-2 (172.16.28.20)  0.046 ms  0.055 ms  0.015 ms
+[marharita@client-2 ~]$ traceroute 172.16.28.10
+traceroute to 172.16.28.10 (172.16.28.10), 30 hops max, 60 byte packets
+ 1  172.16.28.10 (172.16.28.10)  0.395 ms  0.504 ms  0.276 ms
+[marharita@client-2 ~]$ traceroute 10.89.28.6
+traceroute to 10.89.28.6 (10.89.28.6), 30 hops max, 60 byte packets
+ 1  gateway (10.2.89.10)  0.501 ms  0.318 ms  0.369 ms
+ 2  10.89.28.6 (10.89.28.6)  0.617 ms  0.713 ms  0.551 ms
+[marharita@client-2 ~]$ traceroute 10.89.28.20
+traceroute to 10.89.28.20 (10.89.28.20), 30 hops max, 60 byte packets
+ 1  10.89.28.20 (10.89.28.20)  0.820 ms  0.719 ms  0.615 ms
+[marharita@client-2 ~]$ traceroute 192.168.0.104
+traceroute to 192.168.0.104 (192.168.0.104), 30 hops max, 60 byte packets
+ 1  192.168.0.104 (192.168.0.104)  1.215 ms  1.247 ms  1.063 ms
+[marharita@client-2 ~]$ traceroute 10.2.89.10
+traceroute to 10.2.89.10 (10.2.89.10), 30 hops max, 60 byte packets
+ 1  gateway (10.2.89.10)  0.497 ms  0.433 ms  0.670 ms
+
+########### 4. loopback net connection via server-1 & via s8 client-1
+
+$ sudo ip route add 172.17.38.0/24 via 10.2.89.10
+$ sudo ip route add 172.17.48.0/24 via 172.16.28.10
+[marharita@client-2 ~]$ route -v
+Kernel IP routing table
+Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
+..............................................................................
+172.17.38.0     gateway         255.255.255.0   UG    0      0        0 enp0s3
+172.17.48.0     172.16.28.10    255.255.255.0   UG    0      0        0 enp0s8
+
+[marharita@client-2 ~]$ ping 172.17.38.1
+PING 172.17.38.1 (172.17.38.1) 56(84) bytes of data.
+64 bytes from 172.17.38.1: icmp_seq=1 ttl=63 time=0.967 ms
+64 bytes from 172.17.38.1: icmp_seq=2 ttl=63 time=3.22 ms
+
+[marharita@client-2 ~]$ ping 172.17.48.1
+PING 172.17.48.1 (172.17.48.1) 56(84) bytes of data.
+64 bytes from 172.17.48.1: icmp_seq=1 ttl=64 time=0.766 ms
+64 bytes from 172.17.48.1: icmp_seq=2 ttl=64 time=2.22 ms
+^C
+
+[marharita@client-2 ~]$ traceroute 172.17.38.1
+traceroute to 172.17.38.1 (172.17.38.1), 30 hops max, 60 byte packets
+ 1  gateway (10.2.89.10)  0.455 ms  0.386 ms  0.346 ms
+ 2  172.17.38.1 (172.17.38.1)  0.868 ms  0.864 ms  0.913 ms
+ 
+[marharita@client-2 ~]$ traceroute 172.17.48.1
+traceroute to 172.17.48.1 (172.17.48.1), 30 hops max, 60 byte packets
+ 1  172.17.48.1 (172.17.48.1)  0.473 ms  0.483 ms  0.364 ms
+[marharita@client-2 ~]$ 
+
+############# 5. summarizing 172.17.38.1/24 & 172.17.48.1/24 --> 172.17.32.0/19
+
+[marharita@client-2 ~]$ sudo ip route del 172.17.48.0/24 via 172.16.28.10
+[marharita@client-2 ~]$ sudo ip route del 172.17.38.0/24 via 10.2.89.10
+[marharita@client-2 ~]$ sudo ip route add 172.17.32.0/19 via 10.2.89.10
+[marharita@client-2 ~]$ ping 172.17.48.1
+PING 172.17.48.1 (172.17.48.1) 56(84) bytes of data.
+64 bytes from 172.17.48.1: icmp_seq=1 ttl=63 time=0.957 ms
+64 bytes from 172.17.48.1: icmp_seq=2 ttl=63 time=1.62 ms
+
+PING 172.17.38.1 (172.17.38.1) 56(84) bytes of data.
+64 bytes from 172.17.38.1: icmp_seq=1 ttl=63 time=0.852 ms
+64 bytes from 172.17.38.1: icmp_seq=2 ttl=63 time=2.31 ms
+
+[marharita@client-2 ~]$ traceroute 172.17.38.1
+traceroute to 172.17.38.1 (172.17.38.1), 30 hops max, 60 byte packets
+ 1  gateway (10.2.89.10)  0.395 ms  0.315 ms  0.289 ms
+ 2  172.17.38.1 (172.17.38.1)  0.579 ms  0.575 ms  0.719 ms
+[marharita@client-2 ~]$ traceroute 172.17.48.1
+traceroute to 172.17.48.1 (172.17.48.1), 30 hops max, 60 byte packets
+ 1  gateway (10.2.89.10)  0.404 ms  0.330 ms  0.431 ms
+ 2  172.17.48.1 (172.17.48.1)  0.632 ms  0.749 ms  0.770 ms
+
+############# 6. ssh 
+sudo yum -y install openssh-server openssh-clients
+
+marharita@client-2 ~]$ sudo systemctl status sshd
+● sshd.service - OpenSSH server daemon
+   Loaded: loaded (/usr/lib/systemd/system/sshd.service; enabled; vendor preset: enabled)
+   Active: active (running) since Fri 2022-12-09 19:08:28 EET; 14min ago
+     Docs: man:sshd(8)
+           man:sshd_config(5)
+ Main PID: 1237 (sshd)
+   CGroup: /system.slice/sshd.service
+           └─1237 /usr/sbin/sshd -D
+
+Dec 09 19:08:28 client-2 systemd[1]: Starting OpenSSH server daemon...
+Dec 09 19:08:28 client-2 sshd[1237]: Server listening on 0.0.0.0 port 22.
+Dec 09 19:08:28 client-2 sshd[1237]: Server listening on :: port 22.
+Dec 09 19:08:28 client-2 systemd[1]: Started OpenSSH server daemon.
+
+[marharita@client-2 ~]$ systemctl is-active sshd
+active
+[marharita@client-2 ~]$ ssh rita@10.2.89.10
+rita@10.2.89.10's password: 
+Welcome to Ubuntu 22.04 LTS (GNU/Linux 5.15.0-56-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+236 updates can be applied immediately.
+48 of these updates are standard security updates.
+To see these additional updates run: apt list --upgradable
+
+Failed to connect to https://changelogs.ubuntu.com/meta-release-lts. Check your Internet connection or proxy settings
+
+161 updates could not be installed automatically. For more details,
+see /var/log/unattended-upgrades/unattended-upgrades.log
+Last login: Sat Dec 10 19:16:32 2022 from 10.2.89.5
+rita@server-1:~$ 
+
+rita@server-1:~$ ls ~/EPAM
+server-1.txt
+rita@server-1:~$ exit
+logout
+Connection to 10.2.89.10 closed.
+[marharita@client-2 ~]$ ssh-keygen
+Generating public/private rsa key pair.
+Enter file in which to save the key (/home/marharita/.ssh/id_rsa): key_cl2
+Enter passphrase (empty for no passphrase): 
+Enter same passphrase again: 
+Your identification has been saved in key_cl2.
+Your public key has been saved in key_cl2.pub.
+The key fingerprint is:
+SHA256:Bge62m/BFTNlUe+szpeiIzU6V5iN/eX28+r0teN5dYU marharita@client-2
+The key's randomart image is:
++---[RSA 2048]----+
+|      .  .+o.    |
+|     . .+.   .   |
+|    . . .+    .. |
+|     . o.    oE .|
+|    .. .S  *  o .|
+|   o  o.  * +.  +|
+|  . .  . o o...++|
+|     .. + oo..++B|
+|     ..  +.oo++*X|
++----[SHA256]-----+
+
+[marharita@client-2 ~]$ ssh-copy-id -i key_cl2.pub rita@10.2.89.10
+/usr/bin/ssh-copy-id: INFO: Source of key(s) to be installed: "key_cl2.pub"
+/usr/bin/ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed
+/usr/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed -- if you are prompted now it is to install the new keys
+rita@10.2.89.10's password: 
+
+Number of key(s) added: 1
+
+Now try logging into the machine, with:   "ssh 'rita@10.2.89.10'"
+and check to make sure that only the key(s) you wanted were added.
+
+[marharita@client-2 ~]$ sudo vi /etc/ssh/sshd_config
+#uncomment and change
+#
+Port 222
+PubkeyAuthentication yes
+PasswordAuthentication no
+
+[marharita@client-2 ~]$ sudo vi /etc/ssh/ssh_config
+Host *
+        GSSAPIAuthentication yes
+Host server
+  User rita
+  HostName 10.2.89.10
+  IdentityFile /home/marharyta/key_cl2
+
+  
+[marharita@client-2 ~]$ ssh server
+rita@10.2.89.10's password: 
+Welcome to Ubuntu 22.04 LTS (GNU/Linux 5.15.0-56-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+236 updates can be applied immediately.
+48 of these updates are standard security updates.
+To see these additional updates run: apt list --upgradable
+
+Failed to connect to https://changelogs.ubuntu.com/meta-release-lts. Check your Internet connection or proxy settings
+
+161 updates could not be installed automatically. For more details,
+see /var/log/unattended-upgrades/unattended-upgrades.log
+Last login: Sat Dec 10 21:12:02 2022 from 10.2.89.5
+
+rita@server-1:~$ exit
+logout
+Connection to 10.2.89.10 closed.
+[marharita@client-2 ~]$ 
+
+marharita@client-2 ~]$ ping 172.16.28.10
+PING 172.16.28.10 (172.16.28.10) 56(84) bytes of data.
+64 bytes from 172.16.28.10: icmp_seq=1 ttl=64 time=0.457 ms
+64 bytes from 172.16.28.10: icmp_seq=2 ttl=64 time=1.31 ms
+
+[marharita@client-2 ~]$ ssh rita@172.16.28.10
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@    WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!     @
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+IT IS POSSIBLE THAT SOMEONE IS DOING SOMETHING NASTY!
+Someone could be eavesdropping on you right now (man-in-the-middle attack)!
+It is also possible that a host key has just been changed.
+The fingerprint for the ECDSA key sent by the remote host is
+SHA256:dMjLLwBZgpEpbBhm6uwyae9QFDTy6SeNyhm9ELk45Mc.
+Please contact your system administrator.
+Add correct host key in /home/marharita/.ssh/known_hosts to get rid of this message.
+Offending ECDSA key in /home/marharita/.ssh/known_hosts:5
+ECDSA host key for 172.16.28.10 has changed and you have requested strict checking.
+Host key verification failed.
+[marharita@client-2 ~]$ vi /home/marharita/.ssh/known_hosts
+
+marharita@client-2 ~]$ ssh rita@172.16.28.10
+rita@172.16.28.10's password: 
+Welcome to Ubuntu 22.04 LTS (GNU/Linux 5.15.0-56-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+233 updates can be applied immediately.
+41 of these updates are standard security updates.
+To see these additional updates run: apt list --upgradable
+
+161 updates could not be installed automatically. For more details,
+see /var/log/unattended-upgrades/unattended-upgrades.log
+Last login: Sun Dec 11 10:40:04 2022 from 10.89.28.5
+rita@client-1:~$ ls
+Desktop    Downloads  Music     Public  Templates
+Documents  EPAM       Pictures  snap    Videos
+rita@client-1:~$ exit
+logout
+Connection to 172.16.28.10 closed.
+marharita@client-2 ~]$ ssh server
+rita@10.2.89.10's password: 
+Welcome to Ubuntu 22.04 LTS (GNU/Linux 5.15.0-56-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+233 updates can be applied immediately.
+41 of these updates are standard security updates.
+To see these additional updates run: apt list --upgradable
+
+
+161 updates could not be installed automatically. For more details,
+see /var/log/unattended-upgrades/unattended-upgrades.log
+Last login: Sun Dec 11 22:09:26 2022 from 10.89.28.6
+rita@server-1:~$ exit
+logout
+Connection to 10.2.89.10 closed.
+
+##### 7. Firewall
+
+#7.1 connect via SSH 
+#before addin rules 
+
+[marharita@client-2 ~]$ ssh server
+rita@10.2.89.10's password: 
+Welcome to Ubuntu 22.04 LTS (GNU/Linux 5.15.0-56-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+210 updates can be applied immediately.
+17 of these updates are standard security updates.
+To see these additional updates run: apt list --upgradable
+
+161 updates could not be installed automatically. For more details,
+see /var/log/unattended-upgrades/unattended-upgrades.log
+*** System restart required ***
+Last login: Sun Dec 11 22:46:19 2022 from 10.89.28.6
+rita@server-1:~$
+
+#after adding rules
+
+[marharita@client-2 ~]$ ssh rita@10.2.89.10
+123
+^C
+[marharita@client-2 ~]$ ssh server
+^C
+[marharita@client-2 ~]$ ssh server
+^C
+
+#7.2 pingin
+
+#before addin rules
+[marharita@client-2 ~]$ ping 172.17.38.1
+PING 172.17.38.1 (172.17.38.1) 56(84) bytes of data.
+64 bytes from 172.17.38.1: icmp_seq=1 ttl=63 time=0.758 ms
+
+[marharita@client-2 ~]$ ping 172.17.48.1
+PING 172.17.48.1 (172.17.48.1) 56(84) bytes of data.
+64 bytes from 172.17.48.1: icmp_seq=1 ttl=63 time=1.14 ms
+64 bytes from 172.17.48.1: icmp_seq=2 ttl=63 time=3.70 ms
+
+#after adding rules
+
+[marharita@client-2 ~]$ ping 172.17.38.1
+PING 172.17.38.1 (172.17.38.1) 56(84) bytes of data.
+64 bytes from 172.17.38.1: icmp_seq=1 ttl=63 time=0.906 ms
+64 bytes from 172.17.38.1: icmp_seq=2 ttl=63 time=2.65 ms
+^C
+
+[marharita@client-2 ~]$ ping 172.17.48.1
+PING 172.17.48.1 (172.17.48.1) 56(84) bytes of data.
+^C
+--- 172.17.48.1 ping statistics ---
+15 packets transmitted, 0 received, 100% packet loss, time 14003ms
+
+
+#### 8. NAT configure see in server-1.txt
+## afret NAT configuration 
+
+[marharita@client-2 ~]$ ping 8.8.8.8
+PING 8.8.8.8 (8.8.8.8) 56(84) bytes of data.
+64 bytes from 8.8.8.8: icmp_seq=1 ttl=116 time=28.9 ms
+....
+[marharita@client-2 ~]$ ping 192.168.0.1
+PING 192.168.0.1 (192.168.0.1) 56(84) bytes of data.
+64 bytes from 192.168.0.1: icmp_seq=1 ttl=63 time=1.94 ms
+64 bytes from 192.168.0.1: icmp_seq=2 ttl=63 time=1.66 ms
+.......
+[marharita@client-2 ~]$ ping google.com
+PING google.com (142.250.186.206) 56(84) bytes of data.
+64 bytes from waw07s05-in-f14.1e100.net (142.250.186.206): icmp_seq=1 ttl=116 time=17.8 ms
+64 bytes from waw07s05-in-f14.1e100.net (142.250.186.206): icmp_seq=2 ttl=116 time=18.6 ms
+64 bytes from waw07s05-in-f14.1e100.net (142.250.186.206): icmp_seq=3 ttl=116 time=24.6 ms
+^C
+--- google.com ping statistics ---
+3 packets transmitted, 3 received, 0% packet loss, time 2003ms
+rtt min/avg/max/mdev = 17.849/20.379/24.610/3.014 ms
+[marharita@client-2 ~]$ 
+
