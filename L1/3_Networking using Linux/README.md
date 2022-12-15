@@ -333,7 +333,8 @@ traceroute to 8.8.8.8 (8.8.8.8), 30 hops max, 60 byte packets
 ![traceroute_cl-2](traseroute%20cl-2.PNG)
 
 > !X means "communication administratively prohibited" on client-2
------
+------
+
 
 ## **4. On the virtual interface lo Client_1, assign two IP addresses according to the following rule: 172.17.D+10.1/24, 172.17.D+20.1/24.** 
 + Add following two IP addresse into client's-1 Loopback Interface:
@@ -386,7 +387,7 @@ traceroute to 172.17.48.1 (172.17.48.1), 30 hops max, 60 byte packets
  1  172.17.48.1 (172.17.48.1)  0.473 ms  0.483 ms  0.364 ms
 [marharita@client-2 ~]$ 
 ```
-------
+----
 
 ## **5 Calculate the common address and mask (summarizing) addresses 172.17.D+10.1 and 172.17.D+20.1, and the prefix should be as large as possible.   Delete the routes set in the previous step and replace them with the combined route that should go through Server_1**
 
@@ -421,6 +422,8 @@ traceroute to 172.17.48.1 (172.17.48.1), 30 hops max, 60 byte packets
    `$ traceroute 172.17.48.1`
 
    ![traceroute_5_4](5_3%20tracroute.PNG)
+
+----
 
 
 ## **6. Configure the SSH service so that Client_1 and Client_2 can connect to Server_1 and each other.**
@@ -490,6 +493,166 @@ To connect to the server:
   + client-2: `$ ssh rita@172.16.28.10`
 
 ![ssh-cl1-cl2](ssh-cl1-cl2.PNG)
+
+-----
+## **7. Configure the firewall on Server_1 as follows:**
+- Allowed to connect via SSH from Client_1 and forbidden from Client_2 
+- From Client_2 to 172.17.D+10.1 the ping was successful, but to 172.17.D+20.1 it was not successful
+  
++ **7.0 Before configure of firewall on server-1 see iptables. To check filter tables:**
+  
+`$ sudo iptables -L` 
+
+```
+rita@server-1:~$ sudo iptables -L
+[sudo] password for rita: 
+Chain INPUT (policy ACCEPT)
+target     prot opt source               destination         
+
+Chain FORWARD (policy ACCEPT)
+target     prot opt source               destination         
+
+Chain OUTPUT (policy ACCEPT)
+target     prot opt source               destination  
+```
++ before addin rules client-2 connect via SSH is successful:
+
+```
+[marharita@client-2 ~]$ ssh server
+rita@10.2.89.10's password: 
+Welcome to Ubuntu 22.04 LTS (GNU/Linux 5.15.0-56-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+210 updates can be applied immediately.
+17 of these updates are standard security updates.
+To see these additional updates run: apt list --upgradable
+
+161 updates could not be installed automatically. For more details,
+see /var/log/unattended-upgrades/unattended-upgrades.log
+*** System restart required ***
+Last login: Sun Dec 11 22:46:19 2022 from 10.89.28.6
+rita@server-1:~$ 
+```
++ pingin before addin rules:
+```
+[marharita@client-2 ~]$ ping 172.17.38.1
+PING 172.17.38.1 (172.17.38.1) 56(84) bytes of data.
+64 bytes from 172.17.38.1: icmp_seq=1 ttl=63 time=0.758 ms
+
+[marharita@client-2 ~]$ ping 172.17.48.1
+PING 172.17.48.1 (172.17.48.1) 56(84) bytes of data.
+64 bytes from 172.17.48.1: icmp_seq=1 ttl=63 time=1.14 ms
+64 bytes from 172.17.48.1: icmp_seq=2 ttl=63 time=3.70 ms
+```
+
++ **7.1 Adding rules acording the task:**
+   
+`$ sudo iptables -A FORWARD -p icmp -d 172.17.48.1 -j DROP`
+
+`$ sudo iptables -A FORWARD -p tcp -d 10.2.89.0/255.255.255.0 --dport ssh -j DROP`
++ see output:
+```
+rita@server-1:~$ sudo iptables -L
+Chain INPUT (policy ACCEPT)
+target     prot opt source               destination         
+
+Chain FORWARD (policy ACCEPT)
+target     prot opt source               destination         
+DROP       tcp  --  anywhere             10.2.89.0/24         tcp dpt:ssh
+DROP       icmp --  anywhere             172.17.48.1         
+
+Chain OUTPUT (policy ACCEPT)
+target     prot opt source               destination
+```   
++ **after adding rules** client-2 can't connect via SSH to server-1:
+```
+[marharita@client-2 ~]$ ssh rita@10.2.89.10
+123
+^C
+[marharita@client-2 ~]$ ssh server
+^C
+[marharita@client-2 ~]$ ssh server
+^C
+```
++ **after adding rules**: from Client_2 to 172.17.38.1 the ping was successful, but to 172.17.48.1 it was not successful
+```
+[marharita@client-2 ~]$ ping 172.17.38.1
+PING 172.17.38.1 (172.17.38.1) 56(84) bytes of data.
+64 bytes from 172.17.38.1: icmp_seq=1 ttl=63 time=0.906 ms
+64 bytes from 172.17.38.1: icmp_seq=2 ttl=63 time=2.65 ms
+^C
+
+[marharita@client-2 ~]$ ping 172.17.48.1
+PING 172.17.48.1 (172.17.48.1) 56(84) bytes of data.
+^C
+--- 172.17.48.1 ping statistics ---
+15 packets transmitted, 0 received, 100% packet loss, time 14003ms
+```
+
++ to delete rule use key -D (or -F ,--flush deleting all rules):
+
+`$ sudo iptables -D FORWARD -p tcp -d 10.2.89.0/255.255.255.0 --dport ssh -j DROP`
+
+`$ sudo iptables -F`
+
+---
+## **8. Configure NAT on Server_1 service in such a way that Client_1 and Client_2 ping the Internet**
+
++ See NAT tables:  `$ sudo iptables -t nat -L`
+```
+rita@server-1:~$ sudo iptables -t nat -L
+[sudo] password for rita: 
+Chain PREROUTING (policy ACCEPT)
+target     prot opt source               destination         
+
+Chain INPUT (policy ACCEPT)
+target     prot opt source               destination         
+
+Chain OUTPUT (policy ACCEPT)
+target     prot opt source               destination         
+
+Chain POSTROUTING (policy ACCEPT)
+target     prot opt source               destination         
+```
++ calculate summrizing IP address for local network:
+  
+| 10.0.0.0/9 | 00001010 00000000 00000000 00000000 /9| 
+| ------------|-----------------------------------|
+| 10.89.28.5	| 00001010  01011001  00011100  00000101| 
+|10.2.89.5 	| 00001010  00000010  01011001  00000101|
+
++ Add following ruls in NAT tables (according task):
+
+```
+$ sudo iptables -t nat -A POSTROUTING -s 10.0.0.0/9 -j SNAT --to-source 192.168.0.103
+$ sudo iptables -t nat -A POSTROUTING -o enp0s3 -j MASQUERADE
+$ sudo iptables -t nat -D POSTROUTING 1
+```
++ See NAT tables arter addin rules:
+```
+rita@server-1:~$ sudo iptables -t nat -L
+Chain PREROUTING (policy ACCEPT)
+target     prot opt source               destination         
+
+Chain INPUT (policy ACCEPT)
+target     prot opt source               destination         
+
+Chain OUTPUT (policy ACCEPT)
+target     prot opt source               destination         
+
+Chain POSTROUTING (policy ACCEPT)
+target     prot opt source               destination         
+MASQUERADE  all  --  anywhere             anywhere            
+```
++ See result in client-1.txt, client-2.txt (try to ping the Internet):
+
+![NAT](NAT.PNG)
+
+*As we see pings are successful from both clients*
+
 
 
 
