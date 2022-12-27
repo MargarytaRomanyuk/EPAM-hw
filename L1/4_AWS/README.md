@@ -1,7 +1,7 @@
 ## EPAM University Programs Cloud&DevOps Fundamentals Autumn 2022 
 # AWS Cloud Basic
 
-## 1. Read the terms of Using the [AWS Free Tier](.https://docs.aws.amazon.com/en_us/awsaccountbilling/latest/aboutv2/billing-free-tier.html) and the ability to control their own costs.
+## 1. Read the terms of Using the [AWS Free Tier](./https://docs.aws.amazon.com/en_us/awsaccountbilling/latest/aboutv2/billing-free-tier.html) and the ability to control their own costs.
    
 + Free Trials Short-term free trial offers start from the date you activate a particular service
 
@@ -38,8 +38,9 @@ Choose CloudWatch -> Create alarm -> Do the following steps:
 ## 6. Pass free courses on [Amazon qwiklabs](.https://amazon.qwiklabs.com/)
 
 ----
-## 7. Review [Getting Started with Amazon EC2](.https://aws.amazon.com/ru/ec2/getting-started/?nc1=h_ls). Log Into Your AWS Account, Launch,  Configure, Connect and Terminate Your Instance. 
-Do not use Amazon Lightsail. It is recommended to use the t2 or t3.micro instance and the CentOS operating system.
+## 7. Review [Getting Started with Amazon EC2](.https://aws.amazon.com/ru/ec2/getting-started/?nc1=h_ls). Log Into Your AWS Account, Launch,  Configure, Connect and Terminate Your Instance. Do not use Amazon Lightsail. It is recommended to use the t2 or t3.micro instance and the CentOS operating system.
+
+The process of creating and configuring an instance is shown below
 
 + Launch Instance:
   
@@ -245,7 +246,7 @@ Go to "nic.ua"
 - a. On the Instances tab of the Lightsail home page, choose the ellipsis (`⋮`) icon next to the WordPress instance and choose `Delete`.
 - b. Choose Yes, delete from the prompt.
 
-![Lightsail](./img/53_Lightsail.PNG)
+![Lightsail](./img/53_Lightsail.png)
 
 ---
 
@@ -286,17 +287,17 @@ Go to "nic.ua"
 
 ![IAM](./img/61_IAM.PNG)
 
-Choose: **Users** -> **Add user** 
--> select **Programmatic access** 
--> Click the **Next: Permissions**
+Choose: `Users` -> `Add user` 
+-> select `Programmatic access` 
+-> Click the `Next: Permissions`
 
 ![IAM](./img/62_IAM.PNG)
 
-Click on **Attach existing policies** directly option. Select AdministratorAccess then click **Next: Tags.** 
+Click on `Attach existing policies` directly option. Select AdministratorAccess then click `Next: Tags.` 
 
 ![IAM](./img/63_IAM.PNG)
 
-click on **Create user** and  **Download Credentials**:
+click on `Create user` and  `Download Credentials`:
 
 ![IAM](./img/64_IAM.PNG)
 
@@ -339,13 +340,233 @@ aws s3 rm s3:// romaniuk-epam-bucket2/task_AWS
 
 ## 16.   Review the 10-minute example Deploy Docker Containers on Amazon Elastic Container Service (Amazon ECS). Repeat, create a cluster, and run the online demo application or better other application with custom settings.
 
+This guide uses AWS Fargate 
+> **Step 1: Set up first run with Amazon ECS**
+
+![ECS](./img/72_ECS.PNG)
+
+> **Step 2: Create container and task definition**
+
++ a.	In the Container definition field, select `sample-app`.
+
+![ECS](./img/73_ECS.PNG)
+
+![ECS](./img/74_ECS.PNG)
+
+> **Step 3: Define service**
+
+•**Service name:** The default `sample-app-service` is a web-based *"Hello World"* application provided by AWS. 
+
+•	**Number of desired tasks:** Leave the default value of `1`. This will create one copy of your task.
+
+•	Select the `Application Load Balancer` option.
+•	Review your settings and choose `Next`. 
+
+
+![ECS](./img/75_ECS.PNG)
+
+> **Step 4: Configure cluster**
+
+•	In the **Cluster name** field, enter `epam-cluster` and choose `Next`.
+
+![ECS](./img/76_ECS.PNG)
+
+>**Step 5: Launch and view resources**
+
+• Review task definition, task configuration, and cluster configuration before launching. Choose `Create`.
+
+• **Launch Status** page shows the status of  launch and describes each step of the process. After the launch is complete, choose `View service`. 
+
+![ECS](./img/77_ECS.PNG)
+
+> **Step 6: Open the sample application**
+
+ + On the **sample-app-service** page, select the `Details` tab and select the entry under `Target Group Name`. 
+
++ On the `Target groups` page, select the target group name. 
+
+![ECS](./img/78_ECS.PNG)
+
++ In the **Details** section, choose the `Load balancer link`. 
+
++ In the **Description** tab, select the two page icon next to the load balancer DNS to copy the DNS name to your clipboard. 
+
+![ECS](./img/79_ECS.PNG)
+
+ + Paste it into a new browser window, and press enter to view the sample application (in this case, a static webpage).
+
+  ![ECS](./img/80_ECS.PNG)
+
+> **Step 7: Clean up**
+
++ Choose `Delete Cluster` to delete the cluster.
++ Enter `delete me` in the dialog box and choose `Delete`.
+  
+Once everything has been deleted, you will see the Deleted cluster sample-cluster successfully message in green.
+  
+ ![ECS](./img/81_ECS.PNG)
+
+
+ ## **Creating a container image for use on Amazon ECS**
++ Install Docker into EC2 according guide: https://linuxconfig.org/how-to-install-docker-in-rhel-8
+
+```
+sudo dnf install docker-ce-3:20.10.22-3.el9
+```
+![docker](./img/72_docker.PNG)
+
+![docker](./img/73_docker.PNG)
+
+
+Start the Docker service.
+```
+sudo systemctl start docker
+sudo systemctl status docker
+```
+![docker](./img/74_docker.PNG)
+
+
+Add the ec2-user to the docker group so you can execute Docker commands without using sudo.
+```
+sudo usermod -a -G docker ec2-user
+````
+Log out and log back in again
+
+Create a Docker image:
++ Create directory for Dockerfile
+```
+mkdir my_epam_docker
+```
+
+-	Go to `my_epam_docker` and create Dockerfile
+
+```
+cd my_epam_docker
+touch Dockerfile
+```
+Edit the Dockerfile you just created and add the following content:
+
+```bash
+FROM ubuntu:18.04
+
+# Install dependencies
+RUN apt-get update && \
+ apt-get -y install apache2
+
+# Install apache and write hello world message
+RUN echo 'Hello, EPAM from Docker!' > /var/www/html/index.html
+
+# Configure apache
+RUN echo '. /etc/apache2/envvars' > /root/run_apache.sh && \
+ echo 'mkdir -p /var/run/apache2' >> /root/run_apache.sh && \
+ echo 'mkdir -p /var/lock/apache2' >> /root/run_apache.sh && \ 
+ echo '/usr/sbin/apache2 -D FOREGROUND' >> /root/run_apache.sh && \ 
+ chmod 755 /root/run_apache.sh
+
+EXPOSE 80
+
+CMD /root/run_apache.sh
+```
+
+Build the Docker image from Dockerfile.
+````
+sudo docker build -t epam-task .
+````
+
+Run docker images to verify that the image was created correctly.
+```
+docker images --filter reference=epam-task
+```
+
+![docker](./img/75_docker.PNG)
+
+```
+docker images --filter reference=epam-task
+REPOSITORY   TAG       IMAGE ID       CREATED         SIZE
+epam-task    latest    f1cef885984c   2 minutes ago   203MB
+```
+![docker](./img/76_docker.PNG)
+
+Run the newly built image:
+```
+docker run -t -i -p 800:80 epam-task
+``` 
+Open a browser and point to the server that is running Docker and hosting your container. You should see a web page with `Hello EPAM from Docker!` statement.
+
+![docker](./img/77_docker.PNG)
+
+Stop the Docker container by typing `Ctrl + c`.
+
+
+----
 
 ## 17.   Run a Serverless "Hello, World!" with AWS Lambda.
 
+> **Select a Lambda blueprint**
 
-18.  Create a static website on Amazon S3, publicly available (link1 or link2 - using a custom domain 
-registered with Route 53). Post on the page your own photo, the name of the educational 
-program (EPAM Cloud&DevOps Fundamentals Autumn 2022), the list of AWS services with 
-which the student worked within the educational program or earlier and the full list with links 
-of completed labs (based on tutorials or qwiklabs). Provide the link to the website in your report
-and СV
+- Open the AWS Lambda Console
+
+![lambda](./img/82_Lambda.PNG)
+
++ a.	In the AWS Lambda console, choose `Create function`.
+
+![lambda](./img/83_Lambda.PNG)
+
++ b.	Select `Use a blueprint`.
++ c.	 In the Filter box, enter `hello-world-python` and select the hello-world-python blueprint.
++ d.	  Then choose `Configure`.
+
+![lambda](./img/84_Lambda.PNG)
+
+> **Configure and create Lambda function.**
+
+Basic information:
+
+  + Name:  enter `hello-world-python`.
+  + Role:  Select `Create a new role from AWS policy templates`.
+  + Role name: type `lambda_basic_execution`.
+
+![lambda](./img/85_Lambda.PNG)
+
++ Go to the bottom of the page and choose Create function.
+  
+![lambda](./img/86_Lambda.PNG)
+
+> **Invoke Lambda function and verify result**
+
++ Enter an event to test function.
+    + Select `Create new event`.
+    + Type in an event name like `Hello_World_Event`.
+    + Retain default setting of `Private` for Event sharing settings.
+    + Choose `hello-world`  from the template list.
+    + Replace `value3` with `Hello, EPAM from Lambda!`.
+
++ Select `Create`.
+
+![lambda](./img/87_Lambda.PNG)
+
+![lambda](./img/88_Lambda.PNG)
+
+Choose `Test`.
+•	The Execution results tab verifies that the execution succeeded.
+
+![lambda](./img/89_Lambda.PNG)
+
+> **Select the `Monitor` tab to view the results.**
+
+The Monitoring tab will show seven CloudWatch metrics: *Invocations*, *Duration*, *Error count and success rate (%)*, *Throttles*, *Async delivery failures, IteratorAge*, and *Concurrent executions*.
+
+![lambda](./img/90_Lambda.PNG)
+
+> **Delete Lambda function**
+  
+  Select the `Actions` button and select `Delete function`.
+
+
+![lambda](./img/91_Lambda.PNG)
+
+![lambda](./img/92_Lambda.PNG)
+
+---
+
+## 18.   Create a static website on Amazon S3, publicly available (link1 or link2 - using a custom domain registered with Route 53). Post on the page your own photo, the name of the educational program (EPAM Cloud&DevOps Fundamentals Autumn 2022), the list of AWS services with which the student worked within the educational program or earlier and the full list with links of completed labs (based on tutorials or qwiklabs). Provide the link to the website in your report and СV
