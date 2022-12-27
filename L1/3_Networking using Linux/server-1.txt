@@ -101,37 +101,36 @@ ping 10.89.28.10
 
 
 ### !X means "communication administratively prohibited"
- 
-rita@server-1:~$ traceroute 172.16.28.10
-traceroute to 172.16.28.10 (172.16.28.10), 30 hops max, 60 byte packets
- 1  172.16.28.10 (172.16.28.10)  0.795 ms  0.753 ms  0.732 ms
+
+rita@server-1:~$ traceroute 10.2.89.5
+traceroute to 10.2.89.5 (10.2.89.5), 30 hops max, 60 byte packets
+ 1  10.2.89.5 (10.2.89.5)  46.271 ms !X  46.287 ms !X  46.177 ms !X
+
 rita@server-1:~$ traceroute 172.16.28.20
 traceroute to 172.16.28.20 (172.16.28.20), 30 hops max, 60 byte packets
  1  10.89.28.6 (10.89.28.6)  1.888 ms  1.776 ms  1.717 ms
  2  172.16.28.20 (172.16.28.20)  1.406 ms !X  1.258 ms !X  1.221 ms !X
-rita@server-1:~$ traceroute 172.16.28.20
-rita@server-1:~$ traceroute 10.2.89.5
-traceroute to 10.2.89.5 (10.2.89.5), 30 hops max, 60 byte packets
- 1  10.2.89.5 (10.2.89.5)  46.271 ms !X  46.287 ms !X  46.177 ms !X
-rita@server-1:~$ traceroute 172.16.28.20
-traceroute to 172.16.28.20 (172.16.28.20), 30 hops max, 60 byte packets
- 1  10.89.28.6 (10.89.28.6)  0.716 ms  0.679 ms  0.663 ms
- 2  172.16.28.20 (172.16.28.20)  2.910 ms !X  2.879 ms !X  3.148 ms !X
+ 
 rita@server-1:~$ traceroute 172.16.28.10
 traceroute to 172.16.28.10 (172.16.28.10), 30 hops max, 60 byte packets
  1  172.16.28.10 (172.16.28.10)  0.932 ms  0.894 ms  0.867 ms
+
 rita@server-1:~$ traceroute 10.89.28.6
 traceroute to 10.89.28.6 (10.89.28.6), 30 hops max, 60 byte packets
  1  10.89.28.6 (10.89.28.6)  2.242 ms  0.513 ms  0.381 ms
+
 rita@server-1:~$ traceroute 10.89.28.20
 traceroute to 10.89.28.20 (10.89.28.20), 30 hops max, 60 byte packets
  1  server-1 (10.89.28.20)  0.492 ms  0.453 ms  0.437 ms
+
 rita@server-1:~$ traceroute 192.168.0.104
 traceroute to 192.168.0.104 (192.168.0.104), 30 hops max, 60 byte packets
  1  server-1 (192.168.0.104)  0.388 ms  0.331 ms  0.314 ms
+
 rita@server-1:~$ traceroute 192.168.0.1
 traceroute to 192.168.0.1 (192.168.0.1), 30 hops max, 60 byte packets
  1  _gateway (192.168.0.1)  4.804 ms  5.500 ms  5.477 ms
+
 rita@server-1:~$ traceroute 8.8.8.8
 traceroute to 8.8.8.8 (8.8.8.8), 30 hops max, 60 byte packets
  1  _gateway (192.168.0.1)  6.174 ms  6.117 ms  6.095 ms
