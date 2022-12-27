@@ -83,9 +83,9 @@ Do not use Amazon Lightsail. It is recommended to use the t2 or t3.micro instanc
 
 ![volume_attache](./img/13_EC2_volume.PNG)
 
-![volume_attache](./img/14_EC2_volume.PNG)
+![volume_attache](./img/14_EC2_volume.png)
 
-- Connect to Instance and **Mount Disk_D** ([setting guid](.https://thinkcloudly.com/how-to-create-an-ebs-volume)):
+- Connect to Instance and **Mount Disk_D** ( [setting guid](.https://thinkcloudly.com/how-to-create-an-ebs-volume) ):
 
 > `$ sudo lsblk`  and get `xvdf` as the Disk_D name:
 
@@ -98,7 +98,7 @@ Output will give us `data` that means there is no file system on the device and 
 `$ sudo mkfs -t ext4 /dev/xvdf ` 
 
 
-![mount_D](./img/16_EC2_mount_D.PNG)
+![mount_D](./img/16_EC2_mount_D.png)
 
 
 Type `sudo mkdir /data` “data” folder is created and it will show as `xvdf/data`
@@ -108,7 +108,7 @@ Now to mount it:  `sudo mount /dev/xvdf /data`.
 To confirm type `lsblk` and press enter and you will see `xvdf` is mounted to the data folder.
 
 
-![mount_D](./img/17_EC2_mount_D.PNG)
+![mount_D](./img/17_EC2_mount_D.png)
 
 
 Go to data folder by typing `cd /data`
