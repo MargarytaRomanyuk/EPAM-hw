@@ -82,9 +82,10 @@ Do not use Amazon Lightsail. It is recommended to use the t2 or t3.micro instanc
 -	Attach volume:
 
 ![volume_attache](./img/13_EC2_volume.PNG)
+
 ![volume_attache](./img/14_EC2_volume.PNG)
 
-- Connect to Instance and **Mount Disk_D** ([setting guid](.https://thinkcloudly.com/how-to-create-an-ebs-volume/)):
+- Connect to Instance and **Mount Disk_D** ([setting guid](.https://thinkcloudly.com/how-to-create-an-ebs-volume)):
 
 > `$ sudo lsblk`  and get `xvdf` as the Disk_D name:
 
@@ -96,7 +97,9 @@ Output will give us `data` that means there is no file system on the device and 
 
 `$ sudo mkfs -t ext4 /dev/xvdf ` 
 
+
 ![mount_D](./img/16_EC2_mount_D.PNG)
+
 
 Type `sudo mkdir /data` “data” folder is created and it will show as `xvdf/data`
 
@@ -104,7 +107,9 @@ Now to mount it:  `sudo mount /dev/xvdf /data`.
 
 To confirm type `lsblk` and press enter and you will see `xvdf` is mounted to the data folder.
 
+
 ![mount_D](./img/17_EC2_mount_D.PNG)
+
 
 Go to data folder by typing `cd /data`
 
@@ -178,23 +183,24 @@ Go to "nic.ua"
   - Choose Linux/Unix as the platform.
   - Choose WordPress as the blueprint.
 
-![Lightsail](./img/41_Lightsail.png)
+![Lightsail](./img/41_Lightsail.PNG)
+
 
 - e. Choose an instance plan.
 
-![Lightsail](./img/42_Lightsail.png)
+![Lightsail](./img/42_Lightsail.PNG)
 
 - f. Enter a name for your instance and choose Create instance("EPAM-task-WordPress-13"):
   
-![Lightsail](./img/43_Lightsail.png)
-![Lightsail](./img/44_Lightsail.png)
+![Lightsail](./img/43_Lightsail.PNG)
+![Lightsail](./img/44_Lightsail.PNG)
 
 > **Step 2 Connect to instance via SSH and get the password for WordPress website**
 - a.	On the Instances tab of the Lightsail home page, choose the SSH quick-connect icon for WordPress instance.
 - b.	After the browser-based SSH client window opens, enter the following command to retrieve the default application password:
 `cat $HOME/bitnami_application_password`
 
-![Lightsail](./img/45_Lightsail.png)
+![Lightsail](./img/45_Lightsail.PNG)
 
 - c. To sign in to the administration dashboard of your WordPress website the password displayed on the screen.
 
@@ -205,11 +211,11 @@ Go to "nic.ua"
    - In the Username or Email Address box, enter **user.** 
    - In the Password box, enter the default password obtained in Step 2
 
-![Lightsail](./img/46_Lightsail.png)
+![Lightsail](./img/46_Lightsail.PNG)
 
    - 	Choose Log in
 
-![Lightsail](./img/47_Lightsail.png)
+![Lightsail](./img/47_Lightsail.PNG)
 
 > **Step 4 Create a Lightsail static IP address and attach it to your WordPress instance**
 
@@ -218,8 +224,8 @@ Go to "nic.ua"
 - c.	Select the `created WordPress instance` from the Attach to an instance dropdown.
 - d.	Name your static IP, then choose `Create`. 
   
-![Lightsail](./img/48_Lightsail.png)
-![Lightsail](./img/49_Lightsail.png)
+![Lightsail](./img/48_Lightsail.PNG)
+![Lightsail](./img/49_Lightsail.PNG)
 
 > **Step 5: Create a Lightsail DNS zone and map a domain to WordPress instance**
 
@@ -227,19 +233,19 @@ Go to "nic.ua"
 - b. Enter your domain, then choose Create DNS zone. 
 - c. Make note of the name server address listed on the page.
 
-![Lightsail](./img/50_Lightsail.png)
+![Lightsail](./img/50_Lightsail.PNG)
 
-![Lightsail](./img/51_Lightsail.png)
+![Lightsail](./img/51_Lightsail.PNG)
 
 - d. add DNS records:
 
-![Lightsail](./img/52_Lightsail.png)
+![Lightsail](./img/52_Lightsail.PNG)
 
 > **Step 6: Clean up**
 - a. On the Instances tab of the Lightsail home page, choose the ellipsis (`⋮`) icon next to the WordPress instance and choose `Delete`.
 - b. Choose Yes, delete from the prompt.
 
-![Lightsail](./img/53_Lightsail.png)
+![Lightsail](./img/53_Lightsail.PNG)
 
 ---
 
@@ -329,13 +335,12 @@ aws s3 rm s3:// romaniuk-epam-bucket2/task_AWS
 ```
 ![CLI](./img/71_CLI.PNG)
 
+---
+
+## 16.   Review the 10-minute example Deploy Docker Containers on Amazon Elastic Container Service (Amazon ECS). Repeat, create a cluster, and run the online demo application or better other application with custom settings.
 
 
-
-1.   Review the 10-minute example Deploy Docker Containers on Amazon Elastic Container Service 
-(Amazon ECS). Repeat, create a cluster, and run the online demo application or better other
-application with custom settings.
-1.   Run a Serverless "Hello, World!" with AWS Lambda.
+## 17.   Run a Serverless "Hello, World!" with AWS Lambda.
 
 
 18.  Create a static website on Amazon S3, publicly available (link1 or link2 - using a custom domain 
