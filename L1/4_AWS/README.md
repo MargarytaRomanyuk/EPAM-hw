@@ -570,3 +570,142 @@ The Monitoring tab will show seven CloudWatch metrics: *Invocations*, *Duration*
 ---
 
 ## 18.   Create a static website on Amazon S3, publicly available (link1 or link2 - using a custom domain registered with Route 53). Post on the page your own photo, the name of the educational program (EPAM Cloud&DevOps Fundamentals Autumn 2022), the list of AWS services with which the student worked within the educational program or earlier and the full list with links of completed labs (based on tutorials or qwiklabs). Provide the link to the website in your report and СV
+
+> **Step 1: Create a bucket**
+
+For creating buckets and upload files in I use AWS CLI and following commands:
+
+```
+aws s3 mb s3://romaniuk.pp.ua --region eu-central-1
+
+aws s3 mb s3://www.romaniuk.pp.ua --region eu-central-1
+
+aws s3 cp index.html s3://romaniuk.pp.ua
+
+aws s3 cp error.html s3://romaniuk.pp.ua
+
+aws s3 sync . s3://romaniuk.pp.ua
+```
+![web_s3](./img/94_s3web.PNG)
+
+> **Step 2: Enable static website hosting**
+
++ In the **Buckets** list, choose the name of the bucket.
++ Choose `Properties`.
++ Under **Static website hosting**, choose `Edit`.
++ Choose `Use this bucket to host a website`.
++ 	Under **Static website hosting**, choose `Enable`.
++ In **Index document**, enter `index.html`.
++ in Error document enter the custom error.html.
++ Choose `Save changes`.
++ Under **Static website hosting**, note the `Endpoint`.
+
+![web_s3](./img/95_s3web.PNG)
+
+![web_s3](./img/96_s3web.PNG)
+
+> **Step 3: Edit Block Public Access settings**
+
++ Choose `Permissions`.
++ Under **Block public access (bucket settings)**, choose `Edit`.
++ Clear **Block** *all* **public access**, and choose `Save changes`.
+
+![web_s3](./img/97_s3web.PNG)
+
+> **Step 4: Add a bucket policy that makes bucket content publicly available**
+ 
++ Choose `Permissions`
++ Under **Bucket Policy**, choose `Edit`
++ To grant public read access for website, copy the following bucket policy, and paste it in the **Bucket policy editor.**
+
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "PublicReadGetObject",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Action": [
+                "s3:GetObject"
+            ],
+            "Resource": [
+                "arn:aws:s3:::romaniuk.pp.ua/*"
+            ]
+        }
+    ]
+}
+```
+![web_s3](./img/98_s3web.PNG)
+
++ Choose `Save changes`.
+
+![web_s3](./img/99_s3web.PNG)
+
+> **Step 5: Configure an index document and an error document**
+
++ Save the index and file error locally.
++ Upload files to bucket (see **Step1**)
+
+![web_s3](./img/100_s3web.PNG)
+
+
+> **Step 7: Test website endpoint**
+
++ Under **Buckets**, choose the name of bucket.
++ Choose `Properties`/.
++ At the bottom of the page, under **Static website hosting**, choose `Bucket website endpoint`.
+
+![web_s3](./img/101_s3web.PNG)
+
++ Index document opens in a separate browser window.
+
+![web_s3](./img/102_s3web.PNG)
+
+> **Step 8: Configuring a static website using a custom domain registered with Route 53**
+
++ Go to **Route 53** choose `Create hosted zone`
+
+![web_s3](./img/103_s3web.PNG)
+
+![web_s3](./img/104_s3web.PNG)
+
+![web_s3](./img/105_s3web.PNG)
+
+> **Step 9: Add alias records for domain and subdomain**
+
++ Choose `Create record`.
++ Choose `Switch to wizard`.
++ Choose `Simple routing`, and choose `Next`.
++ Choose `Define simple record`.
++ In **Record name**, accept the default value, which is the name of your hosted zone and your domain.
++ In **Value/Route traffic to**, choose `Alias to S3 website endpoint`.
+  -	In Record type, choose `A ‐ Routes traffic to an IPv4 address and some AWS resources`.
+  -	For **Evaluate target health**, choose `No`.
+  -	Choose `Define simple record`.
+
+
+![web_s3](./img/106_s3web.PNG)
+
++ To add an alias record for subdomain same steps accept adding `www.`.
+On the **Configure records** page, choose `Create records`.
+  
+![web_s3](./img/107_s3web.PNG)
+
++ I use activated domain on *pp.ua. Add entries to the list of your own server names ns from AWS Hosted zone record 
+
+![web_s3](./img/108_s3web.PNG)
+
+>**Step 10: Configure subdomain bucket for website redirect**
+
+To configure a redirect request
++ On the Amazon S3 console, in the **Buckets** list, choose subdomain bucket name.
++ Choose `Properties`.
++ Under **Static website hosting**, choose `Edit`.
++ Choose `Redirect requests for an object`.
++ In the **Target bucket** box, enter root domain, for example.
++ For Protocol, choose `http`.
++ Choose `Save changes`.
+
+![web_s3](./img/109_s3web.PNG)
+
