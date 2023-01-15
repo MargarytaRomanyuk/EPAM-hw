@@ -11,27 +11,24 @@ read STORDIR
 #control_start=$( cat du -sh $STORDIR | cut -d' ' -f1 )
 
 # Create archive filename
-#BDIR=$STORDIR
 BDATE=$( date +'%Y.%m.%d-%H:%M:%S' )
 FILENAME=$( hostname -s )_$BDATE
-#Backing up the files
-#tar -cf $STORDIR/$FILENAME.tar $SYNDIR
 
-# Create change monitoring function
+#Backing up the files
+## Create change monitoring function
 event=create,delete
 f_monitoring(){
 inotifywait -q -m -e $event $STORDIR --format '%w%f %e %T' --timefmt '%Y.%m.%d-%H:%M:%S' > log.txt &
 }
 
 echo "Monitoring $STORDIR  $( f_monitoring ) " 
-#kill the monitor on backup restore done, and/or on script exit
+##kill the monitor on backup restore done, and/or on script exit
 wrapup() {
     [[ $COPROC_PID ]] && kill -INT "$COPROC_PID"
 }
+
 trap 'wrapup'  EXIT
 #Backing up the files
 tar -cf $STORDIR/$FILENAME.tar $SYNDIR
 
-
-#$monitoring
 #echo $( cat log.txt )
