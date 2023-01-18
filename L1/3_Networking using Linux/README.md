@@ -3,7 +3,7 @@
 ## Module – Linux Networking
  The practical part of the Linux Networking module involves creation network shown in Figure 1 by means Virtual Box
  
- ![fig1](Net_schem_fig1.PNG)
+ ![fig1](./img/Net_schem_fig1.PNG)
  Figure 1 
  
  Host is the computer on which Virtual Box is running;  
@@ -26,14 +26,14 @@ space, the corresponding address can be changed at your discretion.
 + create virtual machines according to the requirements of the task
 +  configure virtual adapters according to the diagram in Figure 1:
   
-![virtualbox](virrualBox.PNG)
+![virtualbox](./img/virrualBox.PNG)
 
 ----
 ## **1. Configure static addresses on all interfaces on Server_1**
 Server-1 and client-1 are configured on ubuntu 22.04.
 Client-2 - on Centos 7.
 
-![fig1_addr](Net_schem_fig1_with%20addr.png)
+![fig1_addr](./img/Net_schem_fig1_with%20addr.png)
 Fig.2 Network equivalent scheme
 
 
@@ -74,7 +74,7 @@ network:
 
 Check and apply setting
 
-![cheksetserv](check%20setting%20serv-1.PNG)
+![cheksetserv](./img/check%20setting%20serv-1.PNG)
 
  + *client-1:*
 
@@ -112,7 +112,7 @@ Files names are: ifcfg-enp0s3,  ifcfg-enp0s8
 `$ sudo vi /etc/sysconfig/network-scripts/ifcfg-enp0s8`
 
 Permanent IP Address Assignment client-2:
-![devconfcl2](device_conf_client-2.PNG)
+![devconfcl2](./img/device_conf_client-2.PNG)
 
 `$ sudo systemctl restart networking`
 
@@ -142,7 +142,7 @@ network:
 ```
 ` $ ip route`
 
-![rout_cl1](routingcl1.PNG)
+![rout_cl1](./img/routingcl1.PNG)
 
 ### *Permanent routing configuration in client`s-2 configure file*
 
@@ -178,12 +178,12 @@ GATEWAY1=172.16.28.10
 ```
 `$ route -v`
 
-![rout_cl2](routingcl2.PNG)
+![rout_cl2](./img/routingcl2.PNG)
 
 ### *Check internal net connection*
 `$ ping < int_IP_addr >`
 
-![int_ping](intrrnal_ping.PNG)
+![int_ping](./img/intrrnal_ping.PNG)
 
 ----
 
@@ -246,7 +246,7 @@ subnet 10.2.89.0 netmask 255.255.255.0 {
   +  dhcp4:yes  for enp0s3 client-1
   +   BOOTPROTO="dhcp" for enp0s3 client-2
 
-![DHCP_cl](DHCP_clients.PNG)
+![DHCP_cl](./img/DHCP_clients.PNG)
 
 
 + After changing the config files, you must restart the dhcpd service:
@@ -258,7 +258,7 @@ To review all actual leased IP-addresses:
 
 `$ dhcp-lease-list`
 
-![lease-list](lease_list.png)
+![lease-list](./img/lease_list.png)
 
 ---
 
@@ -266,7 +266,7 @@ To review all actual leased IP-addresses:
 
 + 3.1 Use: `$ ping <IP_addr>`
 
-![ping_3](ping_3.PNG)
+![ping_3](./img/ping_3.PNG)
 
 > All pings go in both directions between all virtual machines. Therefore, a connection is established between VM interfaces in the local network.
 
@@ -276,7 +276,7 @@ To review all actual leased IP-addresses:
 
 + *Traceroute server-1* 
 
-![traceroute_serv-1](traseroute%20serv-1.png)
+![traceroute_serv-1](./img/traseroute%20serv-1.png)
 ```
 rita@server-1:~$ traceroute 10.2.89.5
 traceroute to 10.2.89.5 (10.2.89.5), 30 hops max, 60 byte packets
@@ -325,12 +325,12 @@ traceroute to 8.8.8.8 (8.8.8.8), 30 hops max, 60 byte packets
 
 + *Traceroute client-1* 
 
-![traceroute_cl-1](traseroute%20cl-1.png)
+![traceroute_cl-1](./img/traseroute%20cl-1.png)
 
 
 + *Traceroute client-2* 
 
-![traceroute_cl-2](traseroute%20cl-2.PNG)
+![traceroute_cl-2](./img/traseroute%20cl-2.PNG)
 
 > !X means "communication administratively prohibited" on client-2
 ------
@@ -393,7 +393,7 @@ traceroute to 172.17.48.1 (172.17.48.1), 30 hops max, 60 byte packets
 
 + 5.1 Summarizing
 
-![sumur](summarizing.PNG)
+![sumur](./img/summarizing.PNG)
 
 | 172.17.32.0 | 10101100  00010001 00100000 00000000 /19|
 |------|-------|
@@ -421,7 +421,7 @@ traceroute to 172.17.48.1 (172.17.48.1), 30 hops max, 60 byte packets
    `$ traceroute 172.17.38.1`  
    `$ traceroute 172.17.48.1`
 
-   ![traceroute_5_4](5_3%20tracroute.PNG)
+   ![traceroute_5_4](./img/5_3%20tracroute.PNG)
 
 ----
 
@@ -441,17 +441,17 @@ traceroute to 172.17.48.1 (172.17.48.1), 30 hops max, 60 byte packets
 
   `$ ssh rita@10.89.28.20`
 
-![ssh_cl1](ssh_cl1_6.2.PNG)
+![ssh_cl1](./img/ssh_cl1_6.2.PNG)
 + client-2 to server-1
 
   `$ ssh rita@10.2.89.10`
   
-![ssh_cl2](ssh_cl2_6.2.PNG)
+![ssh_cl2](./img/ssh_cl2_6.2.PNG)
 
 + 6.3. Key authentication config  
 `$ ssh-keygen`
 
-![ssh-keygen](ssh_keygen_6.3.PNG)
+![ssh-keygen](./img/ssh_keygen_6.3.PNG)
  
  Сopying the public key to the server
   + *from client-1:*
@@ -465,7 +465,7 @@ Change the port on which the ssh server is running. Enable public key authentica
 
 `$ sudo nano /etc/ssh/sshd_config`
 
-![key-auto](ssh-key_auto.PNG)
+![key-auto](./img/ssh-key_auto.PNG)
 
 Connection to Server
 
@@ -476,23 +476,23 @@ Connection to Server
 
 `$ ssh -i key_cl2.pub rita@10.2.89.10`
 
-![ssh_key_con](ssh-key_con.PNG)
+![ssh_key_con](./img/ssh-key_con.PNG)
 
 + 6.4 To simple SSH connection add a new entry to /etc/ssh/ssh_config file
 
-![ssh_conf](ssh_config%20file.PNG)
+![ssh_conf](./img/ssh_config%20file.PNG)
 
 To connect to the server: 
 
 `$ ssh server`
 
-![ssh-server](ssh-server.PNG)
+![ssh-server](./img/ssh-server.PNG)
 
 + 6.5 Client_1 and Client_2 can connect to each other by Net4 (see Fig.1). 
   + client-1: `$ ssh rita@172.16.28.20`
   + client-2: `$ ssh rita@172.16.28.10`
 
-![ssh-cl1-cl2](ssh-cl1-cl2.PNG)
+![ssh-cl1-cl2](./img/ssh-cl1-cl2.PNG)
 
 -----
 ## **7. Configure the firewall on Server_1 as follows:**
@@ -649,7 +649,7 @@ MASQUERADE  all  --  anywhere             anywhere
 ```
 + See result in client-1.txt, client-2.txt (try to ping the Internet):
 
-![NAT](NAT.PNG)
+![NAT](./img/NAT.PNG)
 
 *As we see pings are successful from both clients*
 
