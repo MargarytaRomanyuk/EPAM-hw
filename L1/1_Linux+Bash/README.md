@@ -317,31 +317,27 @@ Monitoring /home/marharita/EPAM-hw_centOS_Bash-/task_C
 tar: Removing leading `/' from member names
 ```
 
-After script execution there is tar file adding  in $STORDIR 
+After script execution there is tar file adding  in `$STORDIR` 
 (in my case it was /home/marharita/EPAM-hw_centOS_Bash-/task_C):
 
 ![tar](./img/task_C_tar.PNG)
 
-Also now we have log file with a corresponding entry:
+Do change in syncing directory. And see log file with a corresponding entry:
 
-```
-[marharita@VM-Jen-nod1 L1]$ cat log.txt 
-/home/marharita/EPAM-hw_centOS_Bash-/task_C/centosvm_2023.01.14-20:01:11.tar CREATE 2023.01.14-20:01:11
-/home/marharita/EPAM-hw_centOS_Bash-/task_C/1 DELETE 2023.01.14-20:05:07
-/home/marharita/EPAM-hw_centOS_Bash-/task_C/2 DELETE 2023.01.14-20:05:07
-[marharita@VM-Jen-nod1 L1]$ 
-```
+![change_in_log](./img/task_C_touch.PNG)
 Add backup script to **crontab** with frequency of 1 minute:
 
 ```
 [marharita@VM-Jen-nod1 L1]$ crontab -e
 crontab: installing new crontab
 ```
-![cron](./img/task_C_crontab.PNG)
 
 ```
 [marharita@VM-Jen-nod1 L1]$ crontab -l
-*/1 * * * * /home/marharita/EPAM-hw_centOS_Bash-/task_backup.sh /home/marharita/EPAM-hw_centOS_Bash-/sorses /home/marharita/EPAM-hw_centOS_Bash-/sorses
+```
+Add in file:
+```
+*/1 * * * * /home/marharita/EPAM-hw_centOS_Bash-/task_backup.sh /home/marharita/EPAM-hw_centOS_Bash-/sorses /home/marharita/EPAM-hw_centOS_Bash-/task_C
 ```
 See results in syslogs (/var/log):
 ```
