@@ -325,6 +325,7 @@ After script execution there is tar file adding  in `$STORDIR`
 Do change in syncing directory. And see log file with a corresponding entry:
 
 ![change_in_log](./img/task_C_touch.PNG)
+
 Add backup script to **crontab** with frequency of 1 minute:
 
 ```
